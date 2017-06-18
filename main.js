@@ -1,10 +1,10 @@
 const roleHarvester = require('role.harvester');
 const roleUpgrader = require('role.upgrader');
 
-const CREEP_CAP = 5;
-const MAX_UPGRADERS = 100;
+const CREEP_CAP = 7;
+const MAX_UPGRADERS = CREEP_CAP - 1;
 const UPGRADE_TICK_THRESHOLD = 1000;
-const UPGRADE_ENERGY_RATIO = 0.8;
+const UPGRADE_ENERGY_RATIO = (250/300);
 
 function energyAvailable(room) {
     // todo handle multiple rooms
@@ -42,10 +42,8 @@ function pickJobs() {
     let numUpgraders = 0;
 
     _.forEach(Game.creeps, (creep) => {
-        
         if (shouldUpgrade(creep.room) && numUpgraders < MAX_UPGRADERS) {
             numUpgraders++;
-            console.log('here');
             creep.memory.role = "upgrader";
         } else {
             creep.memory.role = "harvester";
@@ -84,7 +82,7 @@ function doJobs() {
 
 function killExcessCreeps() {
     // leave one extra
-    const totalOver = _.size(Game.creeps) - (CREEP_CAP + 1);
+    const totalOver = _.size(Game.creeps) - CREEP_CAP;
     if (totalOver <= 0) {
         return;
     }

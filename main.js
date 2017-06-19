@@ -1,5 +1,5 @@
-const roleGatherer = require('role.gatherer');
-const extensionLib = require('extension');
+const Creep = require('creep');
+const Extension = require('extension');
 
 const CREEP_CAP = 11;
 const MAX_UPGRADERS = CREEP_CAP;
@@ -53,7 +53,7 @@ function killExcessCreeps() {
 
 function buildConstructionSites() {
     if (Game.time % 20 === 0) {
-       _.forEach(Game.rooms, extensionLib.buildSiteIfNeeded);
+       _.forEach(Game.rooms, Extension.buildSiteIfNeeded);
     }
 }
 
@@ -63,5 +63,5 @@ module.exports.loop = function() {
     buildConstructionSites();
     // killExcessCreeps();
     doSpawn();
-    _.forEach(Game.creeps, roleGatherer.run);
+    _.forEach(Game.creeps, Creep.run);
 }

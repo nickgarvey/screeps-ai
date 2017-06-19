@@ -1,7 +1,7 @@
 const Source_ = require('source');
 const Energy_ = require('energy');
 
-const UPGRADE_THRESHOLD = 9070;
+const UPGRADE_THRESHOLD = 2000;
 
 function move(creep, destination) {
     const color = creep.memory.role ? {
@@ -30,7 +30,7 @@ function collect(creep) {
 
 function deposit(creep) {
     const targets = Energy_.structuresLessThanFull(creep.room);
-    const target = _.first(targets);
+    const target = creep.pos.findClosestByRange(targets);
     if (target) {
         if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             move(creep, target);

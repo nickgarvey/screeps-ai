@@ -13,7 +13,6 @@ module.exports = {
             if (creep.pos.isNearTo(source.pos)) {
                 return Number.MAX_SAFE_INTEGER;
             }
-            
             const look = source.room.lookAtArea(
                 source.pos.y - 1,
                 source.pos.x - 1,
@@ -25,10 +24,9 @@ module.exports = {
                     coords[x + ":" + y] = look[x][y];
                 }
             };
-            const numFreeNodes = _.values(coords).filter(
-                coordIsPathable).length;
-            return numFreeNodes / PathFinder.search(creep.pos,
-                source.pos).cost;
+            
+            const numFreeNodes = _.values(coords).filter(coordIsPathable).length;
+            return numFreeNodes / creep.pos.getRangeTo(source.pos);
         });
     }
 };

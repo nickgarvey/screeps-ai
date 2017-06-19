@@ -1,6 +1,7 @@
 const roleGatherer = require('role.gatherer');
+const extensionLib = require('extension');
 
-const CREEP_CAP = 10;
+const CREEP_CAP = 11;
 const MAX_UPGRADERS = CREEP_CAP;
 const UPGRADE_TICK_THRESHOLD = 1000;
 const UPGRADE_ENERGY_RATIO = (250 / 300);
@@ -17,9 +18,7 @@ function cleanUpOldCreeps() {
 function doSpawn() {
     _.forEach(Game.spawns, (spawn) => {
         if (_.size(Game.creeps) < CREEP_CAP) {
-            const name = spawn.createCreep([WORK, CARRY, MOVE], undefined, {
-                role: null,
-            });
+            const name = spawn.createCreep([WORK, CARRY, MOVE]);
             console.log('spawning', name);
         }
 
@@ -37,7 +36,6 @@ function doSpawn() {
 }
 
 function killExcessCreeps() {
-    // leave one extra
     const totalOver = _.size(Game.creeps) - CREEP_CAP;
     if (totalOver <= 0) {
         return;
@@ -53,10 +51,17 @@ function killExcessCreeps() {
         });
 }
 
+function buildConstructionSites() {
+    if (Game.time % 20 === 0) {
+       _.forEach(Game.rooms, extensionLib.buildSiteIfNeeded);
+    }
+}
+
 module.exports.loop = function() {
     console.log('ticks available:', Game.cpu.tickLimit);
     cleanUpOldCreeps();
-    killExcessCreeps();
+    buildConstructionSites();
+    // killExcessCreeps();
     doSpawn();
     _.forEach(Game.creeps, roleGatherer.run);
 }

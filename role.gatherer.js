@@ -1,14 +1,24 @@
 const sourceLib = require('source.lib');
 const energyLib = require('energy.lib');
 
+function move(creep, destination) {
+    const color = creep.memory.role ? {
+        "builder": "#FF0000",
+        "depositor": "#009900",
+        "collector": "#AAAAFF",
+        "upgrader": "#0F0F0F0",
+    }[creep.memory.role] : "#000000";
+    creep.moveTo(destination, {
+        visualizePathStyle: {
+            stroke: color,
+        }
+    });
+}
+
 function collect(creep) {
     const source = sourceLib.select(creep);
     if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(source, {
-            visualizePathStyle: {
-                stroke: '#ffaa00'
-            }
-        });
+        move(creep, source);
     }
 
     if (creep.carry.energy === creep.carryCapacity) {
@@ -23,16 +33,14 @@ function deposit(creep) {
             structure.energy < structure.energyCapacity;
         }
     });
-    if (targets.length > 0) {
-        if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(targets[0], {
-                visualizePathStyle: {
-                    stroke: '#ffffff'
-                }
-            });
+    const target = _.first(targets);
+    if (target) {
+        if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            move(creep, target);
         }
     } else {
         // nothing needs energy, so don't deposit
+        creep.memory.role = null;
     }
 
     if (creep.carry.energy === 0) {
@@ -43,11 +51,7 @@ function deposit(creep) {
 function upgrade(creep) {
     if (creep.upgradeController(creep.room.controller) ==
             ERR_NOT_IN_RANGE) {
-        creep.moveTo(creep.room.controller, {
-            visualizePathStyle: {
-                stroke: '#ffffff'
-            }
-        });
+        move(creep, creep.room.controller);
     }
 
     if (creep.carry.energy === 0) {
@@ -55,14 +59,29 @@ function upgrade(creep) {
     }
 }
 
+function build(creep) {
+    const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
+    if (!target) {
+        creep.memory.role = null;
+        return;
+    }
+    if (creep.build(target) === ERR_NOT_IN_RANGE) {
+        move(creep, target);
+    }
+    if (creep.carry.energy === 0) {
+        creep.memory.role = null;
+    }
+}
+
 var roleGatherer = {
-    /** @param {Creep} creep **/
     run: function(creep) {
         if (!creep.memory.role) {
             if (creep.carry.energy < creep.carryCapacity) {
                 creep.memory.role = "collector";
-            } else if (energyLib.structuresLessThanFull(creep)) {
+            } else if (energyLib.structuresLessThanFull(creep).length) {
                 creep.memory.role = "depositor";
+            } else if (!_.isEmpty(Game.constructionSites)) {
+                creep.memory.role = "builder";
             } else {
                 creep.memory.role = "upgrader";
             }
@@ -76,12 +95,14 @@ var roleGatherer = {
             case "depositor":
                 deposit(creep);
                 break;
+            case "builder":
+                build(creep);
+                break;
             case "upgrader":
                 upgrade(creep);
                 break;
             default:
                 creep.memory.role = null;
-                       
         }
     }
 };

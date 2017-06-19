@@ -1,7 +1,7 @@
 module.exports = {
-    structuresLessThanFull: function(creep) {
+    structuresLessThanFull: function(room) {
         // TODO memoize
-        const structures = creep.room.find(FIND_STRUCTURES);
+        const structures = room.find(FIND_STRUCTURES);
         return _
             .chain(structures)
             .filter(structure => 
@@ -9,5 +9,13 @@ module.exports = {
                         || structure.structureType == STRUCTURE_SPAWN)
                     && structure.energy < structure.energyCapacity)
             .value();
+    },
+
+    totalCapacity: function(room) {
+        const structures = room.find(FIND_MY_STRUCTURES);
+        return _
+            .chain(structures)
+            .map(structure => _.get(structure, 'energyCapacity', 0))
+            .sum();
     }
 };

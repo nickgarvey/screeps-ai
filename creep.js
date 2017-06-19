@@ -1,5 +1,5 @@
-const Source = require('source');
-const Energy = require('energy');
+const Source_ = require('source');
+const Energy_ = require('energy');
 
 function move(creep, destination) {
     const color = creep.memory.role ? {
@@ -16,7 +16,7 @@ function move(creep, destination) {
 }
 
 function collect(creep) {
-    const source = Source.select(creep);
+    const source = Source_.select(creep);
     if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
         move(creep, source);
     }
@@ -27,12 +27,7 @@ function collect(creep) {
 }
 
 function deposit(creep) {
-    const targets = creep.room.find(FIND_STRUCTURES, {
-        filter: (structure) => {
-            return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
-            structure.energy < structure.energyCapacity;
-        }
-    });
+    const targets = Energy_.structuresLessThanFull(creep.room);
     const target = _.first(targets);
     if (target) {
         if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -78,7 +73,7 @@ var roleGatherer = {
         if (!creep.memory.role) {
             if (creep.carry.energy < creep.carryCapacity) {
                 creep.memory.role = "collector";
-            } else if (Energy.structuresLessThanFull(creep).length) {
+            } else if (Energy_.structuresLessThanFull(creep.room).length) {
                 creep.memory.role = "depositor";
             } else if (!_.isEmpty(Game.constructionSites)) {
                 creep.memory.role = "builder";

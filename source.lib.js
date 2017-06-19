@@ -1,8 +1,8 @@
 function coordIsPathable(coord_objs) {
- return !_.any(
-     coord_objs,
-     obj => _.contains(OBSTACLE_OBJECT_TYPES, obj.type)
-         || _.contains(OBSTACLE_OBJECT_TYPES, _.get(obj, 'terrain', '')));
+    return !_.any(
+        coord_objs,
+        obj => _.contains(OBSTACLE_OBJECT_TYPES, obj.type)
+            || _.contains(OBSTACLE_OBJECT_TYPES, _.get(obj, 'terrain', '')));
 }
 
 module.exports = {
@@ -25,10 +25,12 @@ module.exports = {
                     coords[x + ":" + y] = look[x][y];
                 }
             };
-            const numFreeNodes = _.values(coords).filter(coordIsPathable).length;
-            return numFreeNodes / PathFinder.search(creep.pos, source.pos).cost;
+            const numFreeNodes = _.values(coords).filter(
+                coordIsPathable).length;
+            return numFreeNodes / PathFinder.search(creep.pos,
+                source.pos).cost;
         });
-        
+
         return source;
     }
 };

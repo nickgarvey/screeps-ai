@@ -1,7 +1,5 @@
 const Energy_ = require('energy');
 
-const CREEP_CAP = 11;
-
 // must be sorted by highest to lowest cost
 UNIT_OPTIONS = [
     [WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE],
@@ -24,9 +22,11 @@ function bestCanBuild(maxEnergy) {
 }
 
 spawn = {
+    CREEP_CAP: 11,
+
     doSpawn: function() {
         _.forEach(Game.spawns, (spawn) => {
-            if (_.size(Game.creeps) < CREEP_CAP) {
+            if (_.size(Game.creeps) < spawn.CREEP_CAP) {
                 const creepConfig = bestCanBuild(Energy_.totalCapacity(spawn.room));
                 const name = spawn.createCreep(creepConfig);
                 console.log('spawning', name);

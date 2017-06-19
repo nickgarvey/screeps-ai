@@ -4,6 +4,7 @@ const CREEP_CAP = 11;
 
 // must be sorted by highest to lowest cost
 UNIT_OPTIONS = [
+    [WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE],
     [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
     [WORK, WORK, CARRY, MOVE, MOVE],
     [WORK, CARRY, MOVE],
@@ -16,7 +17,8 @@ function bestCanBuild(maxEnergy) {
             return option;
         }
     }
-    // should not happen as that means we don't have enough energy to spawn anything?
+    // if we hit this that means UNIT_OPTIONS doesn't have anything we can spawn
+    // this should never happen
     console.log('not enough energy to spawn anything?');
     return null;
 }
@@ -33,7 +35,7 @@ spawn = {
             if (spawn.spawning) {
                 const spawningCreep = Game.creeps[spawn.spawning.name];
                 spawn.room.visual.text(
-                    '🛠️' + spawningCreep.name,
+                    '🛠' + spawningCreep.name,
                     spawn.pos.x + 1,
                     spawn.pos.y, {
                         align: 'left',

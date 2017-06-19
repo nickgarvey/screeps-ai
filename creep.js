@@ -1,6 +1,8 @@
 const Source_ = require('source');
 const Energy_ = require('energy');
 
+const UPGRADE_THRESHOLD = 9070;
+
 function move(creep, destination) {
     const color = creep.memory.role ? {
         "builder": "#FF0000",
@@ -73,6 +75,8 @@ var roleGatherer = {
         if (!creep.memory.role) {
             if (creep.carry.energy < creep.carryCapacity) {
                 creep.memory.role = "collector";
+            } else if (creep.room.controller.ticksToDowngrade < UPGRADE_THRESHOLD) {
+                creep.memory.role = "upgrader";
             } else if (Energy_.structuresLessThanFull(creep.room).length) {
                 creep.memory.role = "depositor";
             } else if (!_.isEmpty(Game.constructionSites)) {

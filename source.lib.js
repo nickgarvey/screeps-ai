@@ -8,12 +8,12 @@ function coordIsPathable(coord_objs) {
 module.exports = {
     select: function(creep) {
         const sources = creep.room.find(FIND_SOURCES);
-        const source = _.max(sources, (source) => {
+        return _.max(sources, (source) => {
             // if we are standing next to a source, then use it
             if (creep.pos.isNearTo(source.pos)) {
                 return Number.MAX_SAFE_INTEGER;
             }
-
+            
             const look = source.room.lookAtArea(
                 source.pos.y - 1,
                 source.pos.x - 1,
@@ -30,7 +30,5 @@ module.exports = {
             return numFreeNodes / PathFinder.search(creep.pos,
                 source.pos).cost;
         });
-
-        return source;
     }
 };

@@ -1,6 +1,7 @@
 const Creep_ = require('creep');
 const Extension_ = require('extension');
 const Spawn_ = require('spawn');
+const Cpu_ = require('cpu');
 
 function garbageCollect() {
     for (const name in Memory.creeps) {
@@ -9,6 +10,7 @@ function garbageCollect() {
             console.log('Clearing non-existing creep memory:', name);
         }
     }
+    Cpu_.garbageCollect();
 }
 
 function buildConstructionSites() {

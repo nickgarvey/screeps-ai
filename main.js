@@ -2,6 +2,7 @@ const Creep_ = require('creep');
 const Extension_ = require('extension');
 const Spawn_ = require('spawn');
 const Cpu_ = require('cpu');
+const Roads_ = require('roads');
 
 function garbageCollect() {
     for (const name in Memory.creeps) {
@@ -14,8 +15,16 @@ function garbageCollect() {
 }
 
 function buildConstructionSites() {
-    if (Game.time % 20 === 0) {
-       _.forEach(Game.rooms, Extension_.buildSiteIfNeeded);
+    if (Game.time % 20 === 5) {
+        // TODO site selection then building
+        _.forEach(Game.rooms, Extension_.buildSiteIfNeeded);
+    } else if (Game.time % 30 === 0) {
+        console.log('road building');
+        for (const room of _.values(Game.rooms)) {
+            const sites = Roads_.roadSites(room);
+            const positions = _.flatten(sites).map(p => room.getPositionAt(p.x, p.y));
+            positions.forEach(p => p.createConstructionSite(STRUCTURE_ROAD));
+        }
     }
 }
 

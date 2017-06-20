@@ -31,7 +31,7 @@ module.exports = {
 
             const distanceTo = creep.pos.getRangeTo(source.pos);
             const numFreeNodes = _.values(coords).filter(coordIsPathable).length
-            const energyAvailableFactor = Math.pow(source.energy / source.energyCapacity, 0.4);
+            const energyAvailableFactor = Math.pow(source.energy / source.energyCapacity, 0.4) + 0.001;
 
             return energyAvailableFactor * numFreeNodes / distanceTo;
         });

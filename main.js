@@ -21,8 +21,7 @@ function buildConstructionSites() {
     } else if (Game.time % 30 === 0) {
         console.log('road building');
         for (const room of _.values(Game.rooms)) {
-            const sites = Roads_.roadSites(room);
-            const positions = _.flatten(sites).map(p => room.getPositionAt(p.x, p.y));
+            const positions = Roads_.roadSites(room);
             positions.forEach(p => p.createConstructionSite(STRUCTURE_ROAD));
         }
     }

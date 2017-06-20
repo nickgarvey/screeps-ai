@@ -100,7 +100,7 @@ function shouldDefend(creep) {
     return !_.isEmpty(creep.room.find(FIND_HOSTILE_CREEPS));
 }
 
-var roleGatherer = {
+const creep = {
     /**
      * @function
      * @param {Creep} creep
@@ -146,4 +146,4 @@ var roleGatherer = {
     }
 };
 
-module.exports = roleGatherer;
+module.exports = creep;

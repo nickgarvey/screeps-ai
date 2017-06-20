@@ -53,12 +53,12 @@ roads = {
     roadSites: function(room) {
         const structures = room.find(FIND_MY_STRUCTURES);
         const sources = room.find(FIND_SOURCES);
-        const positions = _.map(sources.concat(structures), o => o.pos);
+        const importantPositions = _.map(sources.concat(structures), o => o.pos);
         // list of positions grouped together
-        const groups = findGroupedObjects(positions);
+        const groups = findGroupedObjects(importantPositions);
 
         if (_.isEmpty(groups)) {
-            return;
+            return [];
         }
 
         let paths = [];
@@ -71,7 +71,9 @@ roads = {
                 paths.push(center.findPathTo(closest, options));
             }
         }
-        return paths;
+        return _.flatten(paths)
+            .map(p => room.getPositionAt(p.x, p.y))
+            .filter(p => !_.any(importantPositions, impPos => impPos.isEqualTo(p)));
     },
 
     findGroupedObjects: findGroupedObjects,

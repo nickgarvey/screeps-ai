@@ -11,6 +11,14 @@ module.exports = {
             .value();
     },
 
+    current: function(room) {
+        const structures = room.find(FIND_MY_STRUCTURES);
+        return _
+            .chain(structures)
+            .map(structure => _.get(structure, 'energy', 0))
+            .sum();
+    },
+
     totalCapacity: function(room) {
         const structures = room.find(FIND_MY_STRUCTURES);
         return _

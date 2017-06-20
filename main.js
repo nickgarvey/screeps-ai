@@ -18,7 +18,7 @@ function buildConstructionSites() {
 }
 
 module.exports.loop = function() {
-    console.log('START ticks available:', Game.cpu.tickLimit);
+    console.log('START ticks available:', Game.cpu.tickLimit, Game.cpu.bucket);
 
     buildConstructionSites();
     Spawn_.doSpawn();

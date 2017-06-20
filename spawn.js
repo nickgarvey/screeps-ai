@@ -2,34 +2,60 @@ const Energy_ = require('energy');
 
 // must be sorted by highest to lowest cost
 UNIT_OPTIONS = [
-    [WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
+    [WORK, WORK, CARRY, MOVE, MOVE, MOVE],
     [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
     [WORK, WORK, CARRY, MOVE, MOVE],
     [WORK, CARRY, MOVE],
 ];
 
-function bestCanBuild(maxEnergy) {
-    for (const option of UNIT_OPTIONS) {
-        const cost = _.reduce(option, (t, o) => t + BODYPART_COST[o], 0);
-        if (cost <= maxEnergy) {
-            return option;
-        }
+// must be sorted by highest to lowest cost
+UNIT_DEFENDER = [
+    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK],
+    [TOUGH, TOUGH, MOVE, MOVE, MOVE, ATTACK],
+    [ATTACK, ATTACK, MOVE, MOVE],
+    [TOUGH, ATTACK, MOVE, MOVE],
+    [ATTACK, MOVE],
+];
+
+function configCost(unitConfig) {
+    return _.reduce(unitConfig, (t, o) => t + BODYPART_COST[o], 0);
+}
+
+function bestCanBuild(units, energy) {
+    return  _.find(units, c => configCost(c) <= energy);
+}
+
+/** @param {Room} room */
+function needDefender(room) {
+    if (_.isEmpty(room.find(FIND_HOSTILE_CREEPS))) {
+        return false;
     }
-    // if we hit this that means UNIT_OPTIONS doesn't have anything we can spawn
-    // this should never happen
-    console.log('not enough energy to spawn anything?');
-    return null;
+    // just one defender for now
+    return _.isEmpty(_.find(room.find(FIND_MY_CREEPS), c => c.getActiveBodyparts(ATTACK)));
 }
 
 spawn_ = {
-    CREEP_CAP: 15,
+    CREEP_CAP: 13,
 
     doSpawn: function() {
         _.forEach(Game.spawns, (spawn) => {
+            if (needDefender(spawn.room)) {
+                const creepConfig = bestCanBuild(
+                    UNIT_DEFENDER,
+                    Energy_.current(spawn.room));
+                if (creepConfig) {
+                    const name = spawn.createCreep(creepConfig);
+                    console.log('spawning defender', creepConfig, name);
+                } else {
+                    console.log('insufficent energy', Energy_.current(spawn.room));
+                }
+            }
             if (_.size(Game.creeps) < spawn_.CREEP_CAP) {
-                const creepConfig = bestCanBuild(Energy_.totalCapacity(spawn.room));
+                const creepConfig = bestCanBuild(
+                    UNIT_OPTIONS,
+                    Energy_.totalCapacity(spawn.room));
                 const name = spawn.createCreep(creepConfig);
-                console.log('spawning', name);
+                console.log('spawning', creepConfig, name);
             }
 
             if (spawn.spawning) {

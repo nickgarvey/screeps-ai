@@ -3,12 +3,17 @@ const Energy_ = require('energy');
 
 const UPGRADE_THRESHOLD = 2000;
 
+/**
+  * @param {Creep} creep
+  * @param {RoomPosition} destination
+*/
 function move(creep, destination) {
     const color = creep.memory.role ? {
-        "builder": "#FF0000",
+        "builder": "#FFFF00",
         "depositor": "#009900",
         "collector": "#AAAAFF",
         "upgrader": "#0F0F0F0",
+        "defender": "#FF0000",
     }[creep.memory.role] : "#000000";
     creep.moveTo(destination, {
         visualizePathStyle: {
@@ -17,6 +22,7 @@ function move(creep, destination) {
     });
 }
 
+/** @param {Creep} creep */
 function collect(creep) {
     const source = Source_.select(creep);
     if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
@@ -28,6 +34,7 @@ function collect(creep) {
     }
 }
 
+/** @param {Creep} creep */
 function deposit(creep) {
     const targets = Energy_.structuresLessThanFull(creep.room);
     const target = creep.pos.findClosestByRange(targets);
@@ -45,6 +52,7 @@ function deposit(creep) {
     }
 }
 
+/** @param {Creep} creep */
 function upgrade(creep) {
     if (creep.upgradeController(creep.room.controller) ==
             ERR_NOT_IN_RANGE) {
@@ -56,6 +64,7 @@ function upgrade(creep) {
     }
 }
 
+/** @param {Creep} creep */
 function build(creep) {
     const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
     if (!target) {
@@ -70,10 +79,39 @@ function build(creep) {
     }
 }
 
+/** @param {Creep} creep */
+function defend(creep) {
+    const target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+    if (_.isEmpty(target)) {
+        // don't clear the role as the creep can't do anything anyway
+        return;
+    }
+
+    if (creep.attack(target) === ERR_NOT_IN_RANGE) {
+        move(creep, target);
+    }
+}
+
+/** @param {Creep} creep */
+function shouldDefend(creep) {
+    console.log(creep.name, creep.getActiveBodyparts(ATTACK));
+    if (creep.getActiveBodyparts(ATTACK) === 0) {
+        return false;
+    }
+    console.log(creep.name, !_.isEmpty(creep.room.find(FIND_HOSTILE_CREEPS)));
+    return !_.isEmpty(creep.room.find(FIND_HOSTILE_CREEPS));
+}
+
 var roleGatherer = {
+    /**
+     * @function
+     * @param {Creep} creep
+     */
     run: function(creep) {
         if (!creep.memory.role) {
-            if (creep.carry.energy < creep.carryCapacity) {
+            if (shouldDefend(creep)) {
+                creep.memory.role = "defender";
+            } else if (creep.carry.energy < creep.carryCapacity / 2) {
                 creep.memory.role = "collector";
             } else if (creep.room.controller.ticksToDowngrade < UPGRADE_THRESHOLD) {
                 creep.memory.role = "upgrader";
@@ -88,6 +126,9 @@ var roleGatherer = {
             console.log("Reassigning:", creep.name, creep.memory.role);
         }
         switch (creep.memory.role) {
+            case "defender":
+                defend(creep);
+                break;
             case "collector":
                 collect(creep);
                 break;
@@ -101,6 +142,7 @@ var roleGatherer = {
                 upgrade(creep);
                 break;
             default:
+                console.log("invalid role", creep.memory.role);
                 creep.memory.role = null;
         }
     }

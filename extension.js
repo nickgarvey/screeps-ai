@@ -1,7 +1,7 @@
 const ROOM_WIDTH = 50;
 const ROOM_HEIGHT = 50;
 
-const MAX_SITES = 10;
+const MAX_SITES = 8;
 
 extension = {
     buildSiteIfNeeded: function(room) {

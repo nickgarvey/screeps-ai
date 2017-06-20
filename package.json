@@ -1,0 +1,19 @@
+{
+  "name": "nickgarvey-screeps",
+  "version": "1.0.0",
+  "description": "AI for this game: http://docs.screeps.com",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickgarvey/screeps.git"
+  },
+  "author": "Nick Garvey",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nickgarvey/screeps/issues"
+  },
+  "homepage": "https://github.com/nickgarvey/screeps#readme"
+}

@@ -10,7 +10,7 @@ cpu = {
         Memory.timer = Memory.timer || {};
         // get the timeList for the current game tick.
         // if we are the first timer, then return a default list
-        let timeList = _.get(Memory.timer, Game.time, []);
+        let timeList = Memory.timer[Game.time] || [];
         timeList.push(Game.cpu.getUsed());
         Memory.timer[Game.time] = timeList;
         // return our index into time list for later access
@@ -18,7 +18,7 @@ cpu = {
     },
 
     elaspedTime: function(handle) {
-        const timeList = _.get(Memory.timer, Game.time, []);
+        let timeList = Memory.timer[Game.time] || [];
         if (!_.has(timeList, handle)) {
             throw new Error('Bad handle ' + handle);
         }

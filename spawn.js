@@ -47,7 +47,7 @@ spawn_ = {
                     const name = spawn.createCreep(creepConfig);
                     console.log('spawning defender', creepConfig, name);
                 } else {
-                    console.log('insufficent energy', Energy_.current(spawn.room));
+                    console.log('insufficient energy', Energy_.current(spawn.room));
                 }
             }
             if (_.size(Game.creeps) < spawn_.CREEP_CAP) {

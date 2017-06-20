@@ -5,8 +5,8 @@ module.exports = {
         return _
             .chain(structures)
             .filter(structure =>
-                    (structure.structureType == STRUCTURE_EXTENSION
-                        || structure.structureType == STRUCTURE_SPAWN)
+                    (structure.structureType === STRUCTURE_EXTENSION
+                        || structure.structureType === STRUCTURE_SPAWN)
                     && structure.energy < structure.energyCapacity)
             .value();
     },

@@ -25,7 +25,7 @@ function move(creep, destination) {
 /** @param {Creep} creep */
 function collect(creep) {
     const source = Source_.select(creep);
-    if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+    if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
         move(creep, source);
     }
 
@@ -39,7 +39,7 @@ function deposit(creep) {
     const targets = Energy_.structuresLessThanFull(creep.room);
     const target = creep.pos.findClosestByRange(targets);
     if (target) {
-        if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
             move(creep, target);
         }
     } else {
@@ -54,9 +54,9 @@ function deposit(creep) {
 
 /** @param {Creep} creep */
 function upgrade(creep) {
-    if (creep.upgradeController(creep.room.controller) ==
+    if (creep.upgradeController(creep.room.controller) ===
             ERR_NOT_IN_RANGE) {
-        move(creep, creep.room.controller);
+        move(creep, creep.room.controller.pos);
     }
 
     if (creep.carry.energy === 0) {

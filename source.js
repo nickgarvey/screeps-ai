@@ -30,10 +30,10 @@ module.exports = {
             };
 
             const distanceTo = creep.pos.getRangeTo(source.pos);
-            const numFreeNodes = _.values(coords).filter(coordIsPathable).length;
-            const energyAvailableRatio = source.energy / source.energyCapacity;
+            const numFreeNodes = _.values(coords).filter(coordIsPathable).length
+            const energyAvailableFactor = Math.pow(source.energy / source.energyCapacity, 0.4);
 
-            return energyAvailableRatio * numFreeNodes / distanceTo;
+            return energyAvailableFactor * numFreeNodes / distanceTo;
         });
     }
 };

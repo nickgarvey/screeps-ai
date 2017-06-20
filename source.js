@@ -29,8 +29,11 @@ module.exports = {
                 }
             };
 
+            const distanceTo = creep.pos.getRangeTo(source.pos);
             const numFreeNodes = _.values(coords).filter(coordIsPathable).length;
-            return numFreeNodes / creep.pos.getRangeTo(source.pos);
+            const energyAvailableRatio = source.energy / source.energyCapacity;
+
+            return energyAvailableRatio * numFreeNodes / distanceTo;
         });
     }
 };

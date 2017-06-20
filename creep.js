@@ -94,11 +94,9 @@ function defend(creep) {
 
 /** @param {Creep} creep */
 function shouldDefend(creep) {
-    console.log(creep.name, creep.getActiveBodyparts(ATTACK));
     if (creep.getActiveBodyparts(ATTACK) === 0) {
         return false;
     }
-    console.log(creep.name, !_.isEmpty(creep.room.find(FIND_HOSTILE_CREEPS)));
     return !_.isEmpty(creep.room.find(FIND_HOSTILE_CREEPS));
 }
 

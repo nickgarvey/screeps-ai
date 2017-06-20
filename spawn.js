@@ -2,7 +2,7 @@ const Energy_ = require('energy');
 
 // must be sorted by highest to lowest cost
 UNIT_OPTIONS = [
-    [WORK, WORK, CARRY, MOVE, MOVE, MOVE],
+    [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE],
     [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
     [WORK, WORK, CARRY, MOVE, MOVE],
     [WORK, CARRY, MOVE],
@@ -35,7 +35,7 @@ function needDefender(room) {
 }
 
 spawn_ = {
-    CREEP_CAP: 13,
+    CREEP_CAP: 12,
 
     doSpawn: function() {
         _.forEach(Game.spawns, (spawn) => {

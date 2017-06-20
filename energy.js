@@ -4,7 +4,7 @@ module.exports = {
         const structures = room.find(FIND_STRUCTURES);
         return _
             .chain(structures)
-            .filter(structure => 
+            .filter(structure =>
                     (structure.structureType == STRUCTURE_EXTENSION
                         || structure.structureType == STRUCTURE_SPAWN)
                     && structure.energy < structure.energyCapacity)

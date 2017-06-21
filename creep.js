@@ -1,3 +1,5 @@
+"use strict";
+
 const Source_ = require('source');
 const Energy_ = require('energy');
 

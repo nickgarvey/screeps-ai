@@ -1,14 +1,16 @@
+"use strict";
+
 const Energy_ = require('energy');
 
 // must be sorted by highest to lowest cost
-UNIT_OPTIONS = [
+const UNIT_OPTIONS = [
     [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
     [WORK, WORK, CARRY, MOVE, MOVE],
     [WORK, CARRY, MOVE],
 ];
 
 // must be sorted by highest to lowest cost
-UNIT_DEFENDER = [
+const UNIT_DEFENDER = [
     [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK],
     [TOUGH, TOUGH, MOVE, MOVE, MOVE, ATTACK],
     [ATTACK, ATTACK, MOVE, MOVE],
@@ -33,8 +35,8 @@ function needDefender(room) {
     return _.isEmpty(_.find(room.find(FIND_MY_CREEPS), c => c.getActiveBodyparts(ATTACK)));
 }
 
-spawn_ = {
-    CREEP_CAP: 10,
+const spawn_ = {
+    CREEP_CAP: 15,
 
     doSpawn: function() {
         _.forEach(Game.spawns, (spawn) => {

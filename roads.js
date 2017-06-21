@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  *  @param {Array<RoomPosition>} positions
   */
@@ -44,7 +46,7 @@ function centerFinder(positions) {
     return _.min(positions, p => Math.sqrt(Math.pow(p.x - averageX, 2) + Math.pow(p.y - averageY, 2)));
 }
 
-roads = {
+const roads = {
     /**
       * @type {function}
       * @param {Room} room

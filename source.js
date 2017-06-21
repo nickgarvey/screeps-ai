@@ -1,3 +1,5 @@
+"use strict";
+
 function coordIsPathable(coord_objs) {
     return !_.any(
         coord_objs,

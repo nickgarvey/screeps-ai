@@ -1,3 +1,5 @@
+"use strict";
+
 const Creep_ = require('creep');
 const Extension_ = require('extension');
 const Spawn_ = require('spawn');

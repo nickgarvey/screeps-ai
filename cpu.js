@@ -1,4 +1,6 @@
-cpu = {
+"use strict";
+
+const cpu = {
     garbageCollect: function() {
         // Clear all times other than the current one
         const current = Memory.timer[Game.time];

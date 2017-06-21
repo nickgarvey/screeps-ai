@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = {
     structuresLessThanFull: function(room) {
         // TODO memoize

@@ -1,5 +1,7 @@
 "use strict";
 
+const Extension_ = require('extension');
+
 /**
  *  @param {Array<RoomPosition>} positions
   */
@@ -53,6 +55,13 @@ const roads = {
       * @return {Array}
       */
     roadSites: function(room) {
+        // TODO constant
+        if (Extension_.extensions(room).length < 5) {
+            return [];
+        }
+        
+        // TODO connect sources to deposits, but not sources to sources
+        
         const structures = room.find(FIND_MY_STRUCTURES);
         const sources = room.find(FIND_SOURCES);
         const importantPositions = _.map(sources.concat(structures), o => o.pos);
@@ -70,6 +79,7 @@ const roads = {
             for (let j = i + 1; j < groups.length; j++) {
                 const options = {ignoreCreeps: true, ignoreRoads: true};
                 const closest = center.findClosestByPath(groups[j], options);
+                // TODO favor existing roads slightly
                 paths.push(center.findPathTo(closest, options));
             }
         }

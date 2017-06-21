@@ -17,8 +17,8 @@ function garbageCollect() {
 }
 
 function buildConstructionSites() {
-    if (Game.time % 20 === 5) {
-        // TODO site selection then building
+    if (Game.time % 5 === 2) {
+        console.log('extension building');
         _.forEach(Game.rooms, Extension_.buildSiteIfNeeded);
     } else if (Game.time % 30 === 0) {
         console.log('road building');

@@ -4,7 +4,7 @@ const Energy_ = require('energy');
 
 // must be sorted by highest to lowest cost
 const UNIT_OPTIONS = [
-    [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
+//    [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
     [WORK, WORK, CARRY, MOVE, MOVE],
     [WORK, CARRY, MOVE],
 ];
@@ -36,7 +36,12 @@ function needDefender(room) {
 }
 
 const spawn_ = {
-    CREEP_CAP: 15,
+    CREEP_CAP: {
+        1: 5,
+        2: 10,
+    },
+    
+    CREEP_CAP_DEFAULT: 15,
 
     doSpawn: function() {
         _.forEach(Game.spawns, (spawn) => {
@@ -51,7 +56,11 @@ const spawn_ = {
                     console.log('insufficient energy', Energy_.current(spawn.room));
                 }
             }
-            if (_.size(Game.creeps) < spawn_.CREEP_CAP) {
+            const spawnCap = _.get(
+                spawn_.CREEP_CAP,
+                spawn.room.controller.level,
+                spawn_.CREEP_CAP_DEFAULT);
+            if (_.size(Game.creeps) < spawnCap) {
                 const creepConfig = bestCanBuild(
                     UNIT_OPTIONS,
                     Energy_.totalCapacity(spawn.room));

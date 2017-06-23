@@ -1,20 +1,8 @@
 "use strict";
 
-const ROOM_WIDTH = 50;
-const ROOM_HEIGHT = 50;
+// const MAX_SITES = 8;
 
-const MAX_SITES = 8;
-
-/**
- * @param {Room} room
- * @param {Array<RoomPosition>} positions
- */
-function findPosMiddle(room, positions) {
-    return room.getPositionAt(
-        Math.floor(_.sum(positions, p => p.x) / _.size(positions)),
-        Math.floor(_.sum(positions, p => p.y) / _.size(positions))
-    );
-}
+const RoomAlgs_ = require('room-algs');
 
 Memory.costMemo = {};
 function costFunctionMemo(keyPoints, pos) {
@@ -45,15 +33,13 @@ function costFunction(keyPoints, pos) {
 }
 
 function buildPoints(center) {
-    // TODO remove
-    const pos = center;
-    const room = Game.rooms[pos.roomName];
+    const room = Game.rooms[center.roomName];
     return [
-        pos,
-        room.getPositionAt(pos.x + 1, pos.y),
-        room.getPositionAt(pos.x - 1, pos.y),
-        room.getPositionAt(pos.x, pos.y + 1),
-        room.getPositionAt(pos.x, pos.y - 1),
+        center,
+        room.getPositionAt(center.x + 1, center.y),
+        room.getPositionAt(center.x - 1, center.y),
+        room.getPositionAt(center.x, center.y + 1),
+        room.getPositionAt(center.x, center.y - 1),
     ];
 }
 
@@ -68,83 +54,20 @@ function searchFunction(pos) {
         if (_.get(buildMemo, buildCandidate) !== undefined) {
             return _.get(buildMemo, buildCandidate);
         }
-        const objs = _.filter(buildCandidate.look());
-        for (const obj in objs) {
-            // TODO replace this with OBSTACLE_OBJECT_TYPES
-            if (obj.type === "terrain" && obj["terrain"] === "wall") {
-                buildMemo[buildCandidate] = false;
-                return false;
-            }
-            if (obj.type === "structure" && obj["structure"].structureType !== "road") {
-                buildMemo[buildCandidate] = false;
-                return false;
-            }
+
+        buildMemo[buildCandidate] = RoomAlgs_.isWalkable(buildCandidate);
+        if (!buildMemo[buildCandidate]) {
+            return false;
         }
-        buildMemo[buildCandidate] = true;
     }
     return true;
 }
 
-function roomBfsSearch(startPos, searchFunc) {
-    const room = Game.rooms[startPos.roomName];
-    let horizon = [startPos];
-    let seen = new Set(horizon);
-    while (!_.isEmpty(horizon)) {
-        const candidate = horizon.shift();
-        seen.add(candidate);
-        if (searchFunc(candidate)) {
-            return candidate;
-        }
-        const next = _.filter([
-            room.getPositionAt(candidate.x + 1, candidate.y),
-            room.getPositionAt(candidate.x - 1, candidate.y),
-            room.getPositionAt(candidate.x, candidate.y + 1),
-            room.getPositionAt(candidate.x, candidate.y - 1),
-        ], p => p !== null && !seen.has(p));
-
-        horizon = horizon.concat(next);
-    }
-    return null;
-}
-
-// TODO rename, this is closer to gradient descent
-function roomBfsCost(startPos, costFunc) {
-    const room = Game.rooms[startPos.roomName];
-    let horizon = [startPos];
-    let seen = new Set(horizon);
-    let minCost = Number.MAX_SAFE_INTEGER;
-    let minFound = null;
-
-    while (!_.isEmpty(horizon)) {
-        const candidate = horizon.shift();
-        seen.add(candidate);
-
-        const cost = costFunc(candidate);
-        if (cost >= minCost) {
-            continue;
-        }
-        // TODO don't run this twice
-        minCost = cost;
-        minFound = candidate;
-
-        const next = _.filter([
-            room.getPositionAt(candidate.x + 1, candidate.y),
-            room.getPositionAt(candidate.x - 1, candidate.y),
-            room.getPositionAt(candidate.x, candidate.y + 1),
-            room.getPositionAt(candidate.x, candidate.y - 1),
-        ], p => p !== null && !seen.has(p));
-
-        horizon = horizon.concat(next);
-    }
-    return [minFound, minCost];
-}
-
-const extension = {
-
+module.exports = {
     /** @param {Room} room */
     extensionSites: function(room) {
         // TODO so far this finds the first candidate for placement
-        // build our cost function
+
         // find all sources & spawn
         const keyPoints = []
             .concat(room.find(FIND_MY_SPAWNS))
@@ -154,16 +77,19 @@ const extension = {
         if (_.isEmpty(keyPoints)) {
             return [];
         }
-        const costFunc = (p) => costFunctionMemo(keyPoints, p);
 
-        // bfs with it
-        const [minFound, _2] = roomBfsCost(findPosMiddle(room, keyPoints), costFunc);
-        const center = roomBfsSearch(minFound, searchFunction);
+        // bfs with our cost function
+        const [minFound, _2] = RoomAlgs_.roomHillClimb(
+            RoomAlgs_.findPosMiddle(room, keyPoints),
+            (p) => costFunctionMemo(keyPoints, p)
+        );
+
+        const center = RoomAlgs_.roomBfsSearch(minFound, searchFunction);
         return buildPoints(center);
     },
 
     buildSiteIfNeeded: function(room) {
-        const numExtensions = extension.extensions(room).length;
+        const numExtensions = module.exports.extensions(room).length;
         if (numExtensions >= CONTROLLER_STRUCTURES.extension[room.controller.level]) {
             return;
         }
@@ -173,7 +99,7 @@ const extension = {
         // if (numExtensions >= MAX_SITES * 5) {
             return;
         }
-        _.forEach(extension.extensionSites(room), p => {
+        _.forEach(module.exports.extensionSites(room), p => {
             const r = room.createConstructionSite(p, STRUCTURE_EXTENSION);
             console.log(p, r);
         });
@@ -184,5 +110,3 @@ const extension = {
         return _.filter(structures, s => s.structureType === STRUCTURE_EXTENSION);
     },
 };
-
-module.exports = extension;

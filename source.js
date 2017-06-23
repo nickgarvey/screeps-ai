@@ -1,11 +1,6 @@
 "use strict";
 
-function coordIsPathable(coord_objs) {
-    return !_.any(
-        coord_objs,
-        obj => _.contains(OBSTACLE_OBJECT_TYPES, obj.type)
-            || _.contains(OBSTACLE_OBJECT_TYPES, _.get(obj, 'terrain', '')));
-}
+const RoomAlgs_ = require('room-algs');
 
 module.exports = {
     select: function(creep) {
@@ -19,20 +14,26 @@ module.exports = {
                 return 0;
             }
 
-            const look = source.room.lookAtArea(
+            const look = source.room.lookForAtArea(
+                LOOK_STRUCTURES,
                 source.pos.y - 1,
                 source.pos.x - 1,
                 source.pos.y + 1,
                 source.pos.x + 1);
-            let coords = {};
-            for (const x in look) {
-                for (const y in look[x]) {
-                    coords[x + ":" + y] = look[x][y];
+
+            // flatten the structure as it's tough to work with
+            let objs = {};
+            for (const x of Object.keys(look)) {
+                for (const y of Object.keys(look[x])) {
+                    // if there's a wall here then ignore it
+                    if (Game.map.getTerrainAt(x, y, source.room.name) !== "wall") {
+                        objs[x + ":" + y] = look[x][y];
+                    }
                 }
-            };
+            }
 
             const distanceTo = creep.pos.getRangeTo(source.pos);
-            const numFreeNodes = _.values(coords).filter(coordIsPathable).length
+            const numFreeNodes = _.values(objs).filter(c => RoomAlgs_.isObstacle(c)).length;
             const energyAvailableFactor = Math.pow(source.energy / source.energyCapacity, 0.4) + 0.001;
 
             return energyAvailableFactor * numFreeNodes / distanceTo;

@@ -6,6 +6,28 @@ module.exports = {
     ROOM_HEIGHT: 50,
 
     /**
+     * @callback gridInitFunc
+     * @param {number} x
+     * @param {number} y
+     * @return number
+     */
+
+    /**
+     * @param {gridInitFunc} gridFunc
+     * @returns {Array<Array<number>>}
+     */
+    roomGrid: (gridFunc) => {
+        let arr = new Array(module.exports.ROOM_HEIGHT);
+        for (let i = 0; i < arr.length; i++) {
+            arr[i] = new Array(module.exports.ROOM_WIDTH);
+            for (let j = 0; j < arr[i].length; j++) {
+                arr[i][j] = gridFunc(i, j);
+            }
+        }
+        return arr;
+    },
+
+    /**
      * @param {RoomPosition} position
      * @return boolean
      */
@@ -26,7 +48,7 @@ module.exports = {
     /**
      * @callback costFunc
      * @param {RoomPosition}
-     * @return Number
+     * @return number
      */
 
     /**
@@ -39,7 +61,7 @@ module.exports = {
      *
      * @param {RoomPosition} startPos
      * @param {costFunc} costFunc
-     * @returns {[RoomPosition, Number]}
+     * @returns {[RoomPosition, number]}
      */
     roomHillClimb: (startPos, costFunc) => {
         const room = Game.rooms[startPos.roomName];
@@ -75,7 +97,7 @@ module.exports = {
      *
      * @param {RoomPosition} startPos
      * @param {searchFunc} searchFunc
-     * @returns {[RoomPosition, Number]}
+     * @returns {[RoomPosition, number]}
      */
     roomBfsSearch: (startPos, searchFunc) => {
         const room = Game.rooms[startPos.roomName];
@@ -110,7 +132,7 @@ module.exports = {
     /**
      *
      * @param {Array<RoomPosition>} positions
-     * @returns {[Number, Number]}
+     * @returns {[number, number]}
      */
     pointAverage: (positions) => {
         if (_.isEmpty(positions)) {

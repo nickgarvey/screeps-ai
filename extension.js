@@ -5,7 +5,10 @@ const ROOM_HEIGHT = 50;
 
 const MAX_SITES = 8;
 
-/** @param {Array<RoomPosition>} positions */
+/**
+ * @param {Room} room
+ * @param {Array<RoomPosition>} positions
+ */
 function findPosMiddle(room, positions) {
     return room.getPositionAt(
         Math.floor(_.sum(positions, p => p.x) / _.size(positions)),
@@ -13,7 +16,7 @@ function findPosMiddle(room, positions) {
     );
 }
 
-Memory.costMemo = {}
+Memory.costMemo = {};
 function costFunctionMemo(keyPoints, pos) {
     const argsAsStr = keyPoints.toString() + ':' + pos.toString();
     const saved = Memory.costMemo[argsAsStr];
@@ -33,10 +36,10 @@ function costFunction(keyPoints, pos) {
             pos,
             {pos: keyPoint, range: 1},
             {swampCost: 1});
-        if (search.incomplete === true) {
+        if (search["incomplete"] === true) {
             return Number.MAX_SAFE_INTEGER;
         }
-        total += search.cost;
+        total += search["cost"];
     }
     return total;
 }
@@ -55,9 +58,9 @@ function buildPoints(center) {
 }
 
 let buildMemo = {};
-function searchFunction(room, pos) {
+function searchFunction(pos) {
     const buildCandidates = buildPoints(pos);
-    
+
     for (const buildCandidate of buildCandidates) {
         if (!buildCandidate) {
             return false;
@@ -65,13 +68,14 @@ function searchFunction(room, pos) {
         if (_.get(buildMemo, buildCandidate) !== undefined) {
             return _.get(buildMemo, buildCandidate);
         }
-        const objs = buildCandidate.look();
+        const objs = _.filter(buildCandidate.look());
         for (const obj in objs) {
+            // TODO replace this with OBSTACLE_OBJECT_TYPES
             if (obj.type === "terrain" && obj["terrain"] === "wall") {
                 buildMemo[buildCandidate] = false;
                 return false;
             }
-            if (obj.type === "structure" && obj["struture"].structureType !== "road") {
+            if (obj.type === "structure" && obj["structure"].structureType !== "road") {
                 buildMemo[buildCandidate] = false;
                 return false;
             }
@@ -97,7 +101,7 @@ function roomBfsSearch(startPos, searchFunc) {
             room.getPositionAt(candidate.x, candidate.y + 1),
             room.getPositionAt(candidate.x, candidate.y - 1),
         ], p => p !== null && !seen.has(p));
-        
+
         horizon = horizon.concat(next);
     }
     return null;
@@ -114,7 +118,7 @@ function roomBfsCost(startPos, costFunc) {
     while (!_.isEmpty(horizon)) {
         const candidate = horizon.shift();
         seen.add(candidate);
-        
+
         const cost = costFunc(candidate);
         if (cost >= minCost) {
             continue;
@@ -122,14 +126,14 @@ function roomBfsCost(startPos, costFunc) {
         // TODO don't run this twice
         minCost = cost;
         minFound = candidate;
-        
+
         const next = _.filter([
             room.getPositionAt(candidate.x + 1, candidate.y),
             room.getPositionAt(candidate.x - 1, candidate.y),
             room.getPositionAt(candidate.x, candidate.y + 1),
             room.getPositionAt(candidate.x, candidate.y - 1),
         ], p => p !== null && !seen.has(p));
-        
+
         horizon = horizon.concat(next);
     }
     return [minFound, minCost];
@@ -146,15 +150,15 @@ const extension = {
             .concat(room.find(FIND_MY_SPAWNS))
             .concat(room.find(FIND_SOURCES))
             .map(obj => obj.pos);
+
         if (_.isEmpty(keyPoints)) {
             return [];
         }
         const costFunc = (p) => costFunctionMemo(keyPoints, p);
-        
+
         // bfs with it
-        const [minFound, minCost] = roomBfsCost(findPosMiddle(room, keyPoints), costFunc);
-        const searchFunc = (p) => searchFunction(room, p);
-        const center = roomBfsSearch(minFound, searchFunc);
+        const [minFound, _2] = roomBfsCost(findPosMiddle(room, keyPoints), costFunc);
+        const center = roomBfsSearch(minFound, searchFunction);
         return buildPoints(center);
     },
 

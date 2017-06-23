@@ -40,7 +40,7 @@ const spawn_ = {
         1: 5,
         2: 10,
     },
-    
+
     CREEP_CAP_DEFAULT: 15,
 
     doSpawn: function() {

@@ -5,6 +5,7 @@ const Extension_ = require('extension');
 const Spawn_ = require('spawn');
 const Cpu_ = require('cpu');
 const Roads_ = require('roads');
+const Tower_ = require('tower');
 
 function garbageCollect() {
     for (const name in Memory.creeps) {
@@ -26,6 +27,8 @@ function buildConstructionSites() {
             const positions = Roads_.roadSites(room);
             positions.forEach(p => p.createConstructionSite(STRUCTURE_ROAD));
         }
+    } else if (Game.time % 1 === 0) {
+        _.forEach(Game.rooms, room => console.log(room, Tower_.numTowers(room)));
     }
 }
 

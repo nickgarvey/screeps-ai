@@ -59,9 +59,9 @@ const roads = {
         if (Extension_.extensions(room).length < 5) {
             return [];
         }
-        
+
         // TODO connect sources to deposits, but not sources to sources
-        
+
         const structures = room.find(FIND_MY_STRUCTURES);
         const sources = room.find(FIND_SOURCES);
         const importantPositions = _.map(sources.concat(structures), o => o.pos);
@@ -77,9 +77,9 @@ const roads = {
             const group = groups[i];
             const center = centerFinder(group);
             for (let j = i + 1; j < groups.length; j++) {
-                const options = {ignoreCreeps: true, ignoreRoads: true};
-                const closest = center.findClosestByPath(groups[j], options);
                 // TODO favor existing roads slightly
+                const options = {ignoreCreeps: true};
+                const closest = center.findClosestByPath(groups[j], options);
                 paths.push(center.findPathTo(closest, options));
             }
         }

@@ -6,9 +6,11 @@ const Spawn_ = require('spawn');
 const Cpu_ = require('cpu');
 const Roads_ = require('roads');
 const Tower_ = require('tower');
+const RoomVisual_ = require('room-visual');
+const RoomAlgs_ = require('room-algs');
 
 function garbageCollect() {
-    for (const name in Memory.creeps) {
+    for (const name of Object.keys(Memory.creeps)) {
         if (!Game.creeps[name]) {
             delete Memory.creeps[name];
             console.log('Clearing non-existing creep memory:', name);
@@ -28,7 +30,7 @@ function buildConstructionSites() {
             positions.forEach(p => p.createConstructionSite(STRUCTURE_ROAD));
         }
     } else if (Game.time % 1 === 0) {
-        _.forEach(Game.rooms, room => console.log(room, Tower_.numTowers(room)));
+        // _.forEach(Game.rooms, room => console.log(room, Tower_.numTowers(room)));
     }
 }
 
@@ -38,6 +40,8 @@ module.exports.loop = function() {
     buildConstructionSites();
     Spawn_.doSpawn();
     _.forEach(Game.creeps, Creep_.run);
+
+    // RoomVisual_.heatMap(_.values(Game.rooms)[0], RoomAlgs_.roomGrid((x, y) => x * y));
 
     garbageCollect();
 

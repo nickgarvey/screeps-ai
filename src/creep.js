@@ -1,6 +1,6 @@
 "use strict";
 
-const Source_ = require('source');
+const Source_ = require('src/source');
 const Energy_ = require('energy');
 
 const UPGRADE_THRESHOLD = 2000;
@@ -17,7 +17,8 @@ function move(creep, destination) {
         "upgrader": "#0F0F0F0",
         "defender": "#FF0000",
     }[creep.memory.role] : "#000000";
-    creep.moveTo(destination, {
+    return creep.moveTo(destination, {
+        reusePath: 2,
         visualizePathStyle: {
             stroke: color,
         }
@@ -26,13 +27,20 @@ function move(creep, destination) {
 
 /** @param {Creep} creep */
 function collect(creep) {
-    const source = Source_.select(creep);
+    let source_id = _.get(creep.memory, 'selection', null);
+    let source = Game.getObjectById(source_id);
+    if (source === null) {
+        source = Source_.select(creep);
+    }
+
+    creep.memory.selection = source.id;
     if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
         move(creep, source);
     }
 
     if (creep.carry.energy === creep.carryCapacity) {
         creep.memory.role = null;
+        creep.memory.selection = null;
     }
 }
 

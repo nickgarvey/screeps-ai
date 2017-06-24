@@ -2,6 +2,7 @@
 
 module.exports = {
     /**
+     * This takes around 30 ticks!
      *  @param {Room} room
      *  @param {Array<Array<number>>} values
      */

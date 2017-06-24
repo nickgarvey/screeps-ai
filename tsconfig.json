@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "removeComments": true,
+    "noEmitOnError": true,
+    "noResolve": false,
+    "experimentalDecorators": true,
+    "strict": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "sourceMap": false,
+    "allowJs": true,
+    "baseUrl": "./src/",
+    "outDir": "./out/"
+  },
+  "compileOnSave": true,
+  "include": ["./src/"],
+  "exclude": [
+    "node_modules"
+  ]
+}

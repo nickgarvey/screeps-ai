@@ -126,7 +126,9 @@ module.exports = {
      * @param {Array<RoomPosition>} positions
      */
     findPosMiddle: (room, positions) => {
-        return room.getPositionAt.apply(module.exports.pointAverage(positions));
+        const [x, y] = module.exports.pointAverage(positions);
+        return room.getPositionAt(x, y);
+        
     },
 
     /**

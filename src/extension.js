@@ -100,8 +100,7 @@ module.exports = {
             return;
         }
         _.forEach(module.exports.extensionSites(room), p => {
-            const r = room.createConstructionSite(p, STRUCTURE_EXTENSION);
-            console.log(p, r);
+            room.createConstructionSite(p, STRUCTURE_EXTENSION);
         });
     },
 

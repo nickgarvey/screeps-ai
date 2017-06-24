@@ -1,0 +1,8 @@
+{
+  "name": "nickgarvey-screep-ai",
+  "globalDependencies": {
+    "screeps": "github:screepers/typed-screeps/dist/screeps.d.ts#master",
+    "lodash": "registry:dt/lodash#3.10.0+20160619033623",
+    "node": "registry:dt/node#7.0.0+20170322231424"
+  }
+}

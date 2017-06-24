@@ -6,16 +6,20 @@
     "noEmitOnError": true,
     "noResolve": false,
     "experimentalDecorators": true,
+
     "strict": true,
     "noUnusedParameters": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
     "noUnusedLocals": true,
+
     "sourceMap": false,
     "allowJs": true,
     "baseUrl": "./src/",
-    "outDir": "./out/"
+    "outDir": "C:\\Users\\Nick Garvey\\AppData\\Local\\Screeps\\scripts\\screeps.com\\output"
   },
   "compileOnSave": true,
-  "include": ["./src/"],
+  "include": ["./src/", "./typings/"],
   "exclude": [
     "node_modules"
   ]

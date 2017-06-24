@@ -1,13 +1,8 @@
-"use strict";
-
-const Creep_ = require('creep');
-const Extension_ = require('extension');
-const Spawn_ = require('spawn');
-const Cpu_ = require('cpu');
-const Roads_ = require('roads');
-const Tower_ = require('tower');
-const RoomVisual_ = require('room-visual');
-const RoomAlgs_ = require('room-algs');
+import * as Spawn_ from "spawn";
+import * as Creep_ from "creep";
+import * as Cpu_ from "cpu";
+import * as Extension_ from "extension";
+import * as Roads_ from "roads";
 
 function garbageCollect() {
     for (const name of Object.keys(Memory.creeps)) {
@@ -23,9 +18,9 @@ function buildConstructionSites() {
     if (Game.time % 5 === 2) {
         console.log('extension building');
         _.forEach(Game.rooms, Extension_.buildSiteIfNeeded);
-    } else if (Game.time % 30 === 0) {
+    } else if (Game.time % 4 === 0) {
         console.log('road building');
-        for (const room of _.values(Game.rooms)) {
+        for (const room of _.values(Game.rooms) as Room[]) {
             const positions = Roads_.roadSites(room);
             positions.forEach(p => p.createConstructionSite(STRUCTURE_ROAD));
         }
@@ -34,11 +29,11 @@ function buildConstructionSites() {
     }
 }
 
-module.exports.loop = function() {
+export function loop(): void {
     console.log('START ticks available:', Game.cpu.tickLimit, Game.cpu.bucket);
 
     buildConstructionSites();
-    Spawn_.doSpawn();
+    _.forEach(Game.spawns, Spawn_.doSpawn);
     _.forEach(Game.creeps, Creep_.run);
 
     // RoomVisual_.heatMap(_.values(Game.rooms)[0], RoomAlgs_.roomGrid((x, y) => x * y));

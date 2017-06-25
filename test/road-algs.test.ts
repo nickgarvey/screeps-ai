@@ -37,3 +37,24 @@ test('simulatedAnneal finds min of array', () => {
     // allow some options as we might have gotten unlikely with a jump
     expect([14, 15, 16]).toContain(result);
 });
+
+test('simulatedAnneal escapes local min of array', () => {
+    let array: Array<number> = [];
+    for (let i = -15; i < 15; i++) {
+        array.push(Math.abs(i));
+    }
+    // set first element to be less than next, but we should jump anyway
+    // there is a very small chance we just never do, but at 1000 iterations
+    // we surely are fine
+    array[0] = 10;
+
+    const nextFunc = (index: number) => Math.random() < 0.5
+        ? array[Math.max(index-1, 0)]
+        : array[Math.min(index+1, 30)];
+
+    const costFunc = (index: number) => array[index];
+    const result = alg.simulatedAnneal(0, nextFunc, costFunc, 10000)[0];
+    // allow some options as we might have gotten unlikely with a jump
+    expect(result).toBeGreaterThan(5);
+    expect(result).toBeLessThan(20);
+});

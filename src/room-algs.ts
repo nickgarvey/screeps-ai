@@ -1,7 +1,9 @@
 export const ROOM_WIDTH = 50;
 export const ROOM_HEIGHT = 50;
 
-export function roomGrid(gridFunc: (x: number, y: number) => number): Array<Array<number>> {
+export function roomGrid<T>(
+    gridFunc: (x: number, y: number) => T,
+): Array<Array<T>> {
     let arr = new Array(ROOM_HEIGHT);
     for (let i = 0; i < arr.length; i++) {
         arr[i] = new Array(ROOM_WIDTH);

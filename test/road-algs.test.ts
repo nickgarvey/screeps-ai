@@ -18,7 +18,7 @@ test('roomGrid isn\'t too big', () => {
     expect(valueFn).toHaveBeenCalledTimes(alg.ROOM_HEIGHT * alg.ROOM_WIDTH);
 });
 
-test('simulatedAnneal does something', () => {
+test('simulatedAnneal does climb at all', () => {
     const old = Math.random
     Math.random = () => 0.22;
     try {
@@ -32,14 +32,14 @@ test('simulatedAnneal does something', () => {
 test('simulatedAnneal finds min of array', () => {
     let array: Array<number> = [];
     for (let i = -15; i < 15; i++) {
-        array.push(i);
+        array.push(Math.abs(i));
     }
 
     const nextFunc = (index: number) => Math.random() < 0.5
         ? array[Math.max(index-1, 0)]
         : array[Math.min(index+1, 30)];
 
-    const costFunc = (index: number) => Math.abs(array[index]);
+    const costFunc = (index: number) => array[index];
     const result = alg.simulatedAnneal(15, nextFunc, costFunc)[0];
     // allow some options as we might have gotten unlikely with a jump
     expect([14,15,16]).toContain(result);

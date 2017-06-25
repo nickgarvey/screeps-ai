@@ -149,7 +149,6 @@ export function simulatedAnneal<S>(
         const newState = stepFunction(curState);
         const newCost = costFunction(newState);
         if (newCost < curCost || Math.random() > anneal(curCost, newCost, i)) {
-            console.log(anneal(curCost, newCost, i));
             curCost = newCost;
             curState = newState;
         }

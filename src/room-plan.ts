@@ -45,8 +45,6 @@ export function buildRoomPlan(
     numExtensions: number,
     numTowers: number,
 ): number | RoomState {
-    room.toString(); // suppress warning
-
     // initial state: everything all over the place
     let initialState : RoomState = {extensions: [], towers: []};
     for (let i = 0; i < numExtensions; i++) {
@@ -56,8 +54,6 @@ export function buildRoomPlan(
         initialState.towers.push(randXY());
     }
 
-    const sources = room.find(FIND_SOURCES) as Source[];
-    const buildableGrid = getBuildableGrid(room);
 
     const step = (state: RoomState) => {
         let newState = {...state};
@@ -71,6 +67,8 @@ export function buildRoomPlan(
         return newState;
     };
 
+    const buildableGrid = getBuildableGrid(room);
+    const sources = room.find(FIND_SOURCES) as Source[];
     const cost = (state: RoomState) => {
         let cost = 0;
         for (const [x, y] of state.extensions) {
@@ -88,5 +86,6 @@ export function buildRoomPlan(
         }
         return cost;
     };
+
     return simulatedAnneal(initialState, step, cost)[0];
 }

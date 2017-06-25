@@ -15,11 +15,11 @@
 
     "sourceMap": false,
     "allowJs": true,
-    "baseUrl": "./src/",
-    "outDir": "C:\\Users\\Nick Garvey\\AppData\\Local\\Screeps\\scripts\\screeps.com\\output"
+    "baseUrl": "src/",
+    "outDir": "out/"
   },
   "compileOnSave": true,
-  "include": ["./src/", "./typings/", "./test/"],
+  "include": ["src", "test", "typings"],
   "exclude": [
     "node_modules"
   ]

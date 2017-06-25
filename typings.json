@@ -3,6 +3,7 @@
   "globalDependencies": {
     "screeps": "github:screepers/typed-screeps/dist/screeps.d.ts#master",
     "lodash": "registry:dt/lodash#3.10.0+20160619033623",
-    "node": "registry:dt/node#7.0.0+20170322231424"
+    "node": "registry:dt/node#7.0.0+20170322231424",
+    "jest": "registry:dt/jest#19.2.0+20170312200138"
   }
 }

@@ -10,23 +10,16 @@ export function roomGrid(gridFunc: (x: number, y: number) => number): Array<Arra
         }
     }
     return arr;
-};
+}
 
-/**
- * @param {RoomPosition} position
- * @return boolean
- */
 export function isWalkable(position: RoomPosition) {
     if (Game.map.getTerrainAt(position) === "wall") {
         return false;
     }
     return !_.any(position.lookFor<Structure>(LOOK_STRUCTURES), isObstacle);
-};
+}
 
-/**
-* @return boolean
-*/
-export function isObstacle(obj: Structure) {
+export function isObstacle(obj: Structure): boolean {
     return _.contains(OBSTACLE_OBJECT_TYPES, obj.structureType);
 }
 
@@ -62,14 +55,8 @@ export function roomHillClimb(
         horizon.push(...nextInSearch(room, candidate, seen));
     }
     return [minFound, minCost];
-};
+}
 
-/**
- *
- * @param {RoomPosition} startPos
- * @param {searchFunc} searchFunc
- * @returns {[RoomPosition, number]}
- */
 export function roomBfsSearch(
     startPos: RoomPosition,
     searchFunc: (pos: RoomPosition) => boolean
@@ -88,10 +75,6 @@ export function roomBfsSearch(
     return null;
 }
 
-/**
- * @param {Room} room
- * @param {Array<RoomPosition>} positions
- */
 export function findPosMiddle(room: Room, positions: Array<RoomPosition>): RoomPosition {
     const [x, y] = pointAverage(positions);
     const result = room.getPositionAt(x, y);
@@ -99,13 +82,9 @@ export function findPosMiddle(room: Room, positions: Array<RoomPosition>): RoomP
         throw Error("Point average is null");
     }
     return result;
-};
+}
 
-/**
- *
- * @param {Array<RoomPosition>} positions
- * @returns {[number, number]}
- */
+
 export function pointAverage(positions: Array<RoomPosition>): [number, number] {
     if (_.isEmpty(positions)) {
         throw Error("Positions was empty");
@@ -114,19 +93,15 @@ export function pointAverage(positions: Array<RoomPosition>): [number, number] {
         Math.round(_.sum(positions, p => p.x) / _.size(positions)),
         Math.round(_.sum(positions, p => p.y) / _.size(positions))
     ];
-};
+}
 
-/**
- *  @param {Array<RoomPosition>} positions
- *  Must be in same room
- */
 export function centerFinder(positions: Array<RoomPosition>) {
     const [avgX, avgY] = pointAverage(positions);
     return _.min(
         positions,
         p => Math.sqrt(Math.pow(p.x - avgX, 2) + Math.pow(p.y - avgY, 2))
     );
-};
+}
 
 export function findClusters(positions: Array<RoomPosition>) {
     let toSearch = new Set(positions);
@@ -154,4 +129,28 @@ export function findClusters(positions: Array<RoomPosition>) {
         groups.push(curGroup);
     }
     return groups;
+}
+
+export function simulatedAnneal<S>(
+    initialState: S,
+    stepFunction: (state: S) => S,
+    costFunction: (state: S) => number,
+    iterations = 1000,
+    startTemp = 1,
+): [S, number] {
+    const anneal = (oldCost: number, newCost: number, iteration: number) =>
+        Math.exp((newCost - oldCost) / (startTemp / Math.pow(0.95, iteration)));
+
+    let curState = initialState;
+    let curCost = costFunction(initialState);
+    for (let i = 0; i < iterations; i++) {
+        const newState = stepFunction(curState);
+        const newCost = costFunction(newState);
+        if (newCost < curCost || Math.random() > anneal(curCost, newCost, i)) {
+            console.log(anneal(curCost, newCost, i));
+            curCost = newCost;
+            curState = newState;
+        }
+    }
+    return [curState, curCost];
 }

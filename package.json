@@ -4,7 +4,7 @@
   "description": "AI for this game: http://docs.screeps.com",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "postinstall": "typings install"
   },
   "repository": {
@@ -19,7 +19,21 @@
   "homepage": "https://github.com/nickgarvey/screeps#readme",
   "devDependencies": {
     "typings": "^2.1.1",
-    "mocha": "^3.4.2",
-    "lodash": "^3.10.1"
+    "ts-jest": "^20.0.6",
+    "jest": "^20.0.4",
+    "lodash": "^3.10.1",
+    "typescript": "^2.3.4"
+  },
+
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "/test/.*\\.(ts|tsx|js)$"
   }
 }

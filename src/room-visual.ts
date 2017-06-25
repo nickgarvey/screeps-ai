@@ -22,7 +22,6 @@ export function heatMap(room: Room, values: Array<Array<number>>) {
 
     for (let i = 0; i < values.length; i++) {
         for (let j = 0; j < values[i].length; j++) {
-
             const text = (
                 Number.isInteger(values[i][j])
                 ? values[i][j]

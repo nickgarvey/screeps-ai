@@ -27,7 +27,6 @@ function bestCanBuild(
     return  _.find(units, c => configCost(c) <= energy);
 }
 
-/** @param {Room} room */
 function needDefender(room: Room) {
     if (_.isEmpty(room.find(FIND_HOSTILE_CREEPS))) {
         return false;

@@ -18,7 +18,7 @@ function buildConstructionSites() {
     if (Game.time % 5 === 2) {
         console.log('extension building');
         _.forEach(Game.rooms, Extension_.buildSiteIfNeeded);
-    } else if (Game.time % 4 === 0) {
+    } else if (Game.time % 15 === 0) {
         console.log('road building');
         for (const room of _.values(Game.rooms) as Room[]) {
             const positions = Roads_.roadSites(room);
@@ -31,7 +31,6 @@ function buildConstructionSites() {
 
 export function loop(): void {
     console.log('START ticks available:', Game.cpu.tickLimit, Game.cpu.bucket);
-
     buildConstructionSites();
     _.forEach(Game.spawns, Spawn_.doSpawn);
     _.forEach(Game.creeps, Creep_.run);

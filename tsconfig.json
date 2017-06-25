@@ -19,7 +19,7 @@
     "outDir": "C:\\Users\\Nick Garvey\\AppData\\Local\\Screeps\\scripts\\screeps.com\\output"
   },
   "compileOnSave": true,
-  "include": ["./src/", "./typings/"],
+  "include": ["./src/", "./typings/", "./test/"],
   "exclude": [
     "node_modules"
   ]

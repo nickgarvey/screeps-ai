@@ -1,4 +1,4 @@
-import {ROOM_HEIGHT, ROOM_WIDTH, roomGrid, simulatedAnneal} from "./room-algs";
+import {printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid, simulatedAnneal} from "./room-algs";
 
 function randXY(): [number, number] {
     return [Math.round(Math.random() * ROOM_WIDTH), Math.round(Math.random() * ROOM_HEIGHT)];
@@ -63,9 +63,7 @@ function setCached(
     Memory.plan[id] = state;
 }
 
-const printState = JSON.stringify;
-
-function printGrid(grid: RoomGrid<boolean>) {
+export function printGrid(grid: RoomGrid<boolean>) {
     for (let y = 0; y < ROOM_HEIGHT; y++) {
         let toPrint = [];
         for (let x = 0; x < ROOM_WIDTH; x++) {
@@ -96,7 +94,8 @@ export function buildRoomPlan(
         if (curCost === Number.POSITIVE_INFINITY) {
             return randState();
         }
-        let newState = {...state};
+        let newState = _.clone(state, true);
+
         const toMoveIndex = Math.floor(Math.random() * (numExtensions + numTowers));
         if (toMoveIndex < numExtensions) {
             newState.extensions[toMoveIndex] = jiggleCoord(state.extensions[toMoveIndex]);
@@ -108,7 +107,6 @@ export function buildRoomPlan(
     };
 
     const buildableGrid = getBuildableGrid(room);
-    printGrid(buildableGrid);
     const sources = room.find(FIND_SOURCES) as Source[];
     const cost = (state: RoomState) => {
         let cost = 0;
@@ -130,7 +128,7 @@ export function buildRoomPlan(
     };
     let startState = getCached(room, numExtensions, numTowers) || randState();
     console.log('start state:', printState(startState), cost(startState));
-    const [result, resultCost] = simulatedAnneal(startState, step, cost, 20);
+    const [result, resultCost] = simulatedAnneal(startState, step, cost, 50);
     setCached(room, numExtensions, numTowers, result);
     console.log('end state:', printState(result), resultCost);
     return result;

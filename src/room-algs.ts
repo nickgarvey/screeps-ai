@@ -142,6 +142,9 @@ export function findClusters(positions: Array<RoomPosition>) {
     return groups;
 }
 
+export const printState = JSON.stringify;
+
+
 export function simulatedAnneal<S>(
     initialState: S,
     stepFunction: (state: S, cost: number) => S,
@@ -158,9 +161,7 @@ export function simulatedAnneal<S>(
         const newState = stepFunction(curState, curCost);
         const newCost = costFunction(newState);
         const rand = Math.random();
-        // stepping! 142 Infinity 0.7627713129946292 8 0
         if (newCost < curCost || rand > anneal(curCost, newCost, i)) {
-            console.log('stepping!', newCost, curCost, rand, i, anneal(curCost, newCost, i));
             curCost = newCost;
             curState = newState;
         }

@@ -21,7 +21,7 @@ function jiggleCoord(coord: [number, number]): [number, number] {
 
 function maybeCanBuild(x: number, y: number) {
     // can't build on the edges
-    return x >= 1 && x < ROOM_WIDTH -1 && y >= 1 && y < ROOM_HEIGHT - 1;
+    return x >= 2 && x < ROOM_WIDTH - 1 && y >= 2 && y < ROOM_HEIGHT - 1;
 }
 
 function getBuildableGrid(room: Room): Array<Array<boolean>> {
@@ -46,16 +46,21 @@ export function buildRoomPlan(
     numTowers: number,
 ): number | RoomState {
     // initial state: everything all over the place
-    let initialState : RoomState = {extensions: [], towers: []};
-    for (let i = 0; i < numExtensions; i++) {
-        initialState.extensions.push(randXY());
-    }
-    for (let i = 0; i < numTowers; i++) {
-        initialState.towers.push(randXY());
-    }
+    const randState = () => {
+        let state: RoomState = {extensions: [], towers: []};
+        for (let i = 0; i < numExtensions; i++) {
+            state.extensions.push(randXY());
+        }
+        for (let i = 0; i < numTowers; i++) {
+            state.towers.push(randXY());
+        }
+        return state;
+    };
 
-
-    const step = (state: RoomState) => {
+    const step = (state: RoomState, curCost: number) => {
+        if (curCost === Number.MAX_SAFE_INTEGER) {
+            return randState();
+        }
         let newState = {...state};
         const toMoveIndex = Math.floor(Math.random() * (numExtensions + numTowers));
         if (toMoveIndex < numExtensions) {
@@ -86,6 +91,7 @@ export function buildRoomPlan(
         }
         return cost;
     };
-
-    return simulatedAnneal(initialState, step, cost)[0];
+    const result = simulatedAnneal(randState(), step, cost);
+    console.log(JSON.stringify(result[0]), result[1]);
+    return result[0];
 }

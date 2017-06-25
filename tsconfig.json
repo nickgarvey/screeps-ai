@@ -15,8 +15,7 @@
 
     "sourceMap": false,
     "allowJs": true,
-    "baseUrl": "src/",
-    "outDir": "out/"
+    "baseUrl": "src/"
   },
   "compileOnSave": true,
   "include": ["src", "test", "typings"],

@@ -41,3 +41,6 @@ export function loop(): void {
 
     console.log('END   ticks used:', Math.ceil(Game.cpu.getUsed()));
 }
+
+// avoid warnings / possible removal of loop via optimization
+if (!Game) loop();

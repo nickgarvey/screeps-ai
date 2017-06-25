@@ -163,7 +163,7 @@ export function simulatedAnneal<S>(
         }
         const newCost = costFunction(newState);
         const rand = Math.random();
-        if (newCost < curCost || rand > anneal(curCost, newCost, i)) {
+        if (newCost <= curCost || rand > anneal(curCost, newCost, i)) {
             curCost = newCost;
             curState = newState;
         }

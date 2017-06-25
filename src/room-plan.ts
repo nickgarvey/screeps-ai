@@ -1,6 +1,7 @@
 import {printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid, simulatedAnneal} from "./room-algs";
 
 const START_TEMP = 200;
+const ANNEAL_ITERATIONS = 15;
 const JIGGLE_AMOUNT = 5;
 
 function randXY(): [number, number] {
@@ -171,7 +172,9 @@ function randState(
         for (let i = 0; i < numTowers; i++) {
             state.towers.push(randBuildable());
         }
-        return state;
+        if (validState(state, buildableGrid)) {
+            return state;
+        }
     }
 }
 
@@ -180,19 +183,24 @@ export function buildRoomPlan(
     numExtensions: number,
     numTowers: number,
 ): number | RoomState {
-    // initial state: everything all over the place
-
     const buildableGrid = getBuildableGrid(room);
 
     const stepFn = buildStepFunction(numExtensions, numTowers, buildableGrid);
-
     const costFn = buildCostFunction(room);
+
     let startState = getCached(room, numExtensions, numTowers)
         || randState(numExtensions, numTowers, buildableGrid);
+
     console.log('start state:', printState(startState), costFn(startState));
-    const [result, resultCost] = simulatedAnneal(startState, stepFn, costFn, 50);
-    setCached(room, numExtensions, numTowers, result);
+    const [result, resultCost] = simulatedAnneal(
+        startState,
+        stepFn,
+        costFn,
+        ANNEAL_ITERATIONS,
+        START_TEMP);
     console.log('end state:', printState(result), resultCost);
+
+    setCached(room, numExtensions, numTowers, result);
     return result;
 }
 

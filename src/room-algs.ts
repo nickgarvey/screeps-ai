@@ -3,12 +3,21 @@ export const ROOM_HEIGHT = 50;
 
 export function roomGrid<T>(
     gridFunc: (x: number, y: number) => T,
-): Array<Array<T>> {
-    let arr = new Array(ROOM_HEIGHT);
-    for (let i = 0; i < arr.length; i++) {
-        arr[i] = new Array(ROOM_WIDTH);
-        for (let j = 0; j < arr[i].length; j++) {
-            arr[i][j] = gridFunc(i, j);
+): RoomGrid<T> {
+    let arr = new Array(ROOM_WIDTH * ROOM_HEIGHT);
+    for (const [x, y] of roomCoords()) {
+        arr[x + ROOM_WIDTH * y] = gridFunc(x, y);
+    }
+    return {
+        get: (x: number, y: number) => arr[x + ROOM_WIDTH * y]
+    };
+}
+
+export function roomCoords(): Array<[number, number]> {
+    let arr : Array<[number, number]> = [];
+    for (let x = 0; x < ROOM_WIDTH; x++) {
+        for (let y = 0; y < ROOM_HEIGHT; y++) {
+            arr.push([x, y]);
         }
     }
     return arr;
@@ -148,7 +157,10 @@ export function simulatedAnneal<S>(
     for (let i = 0; i < iterations; i++) {
         const newState = stepFunction(curState, curCost);
         const newCost = costFunction(newState);
-        if (newCost < curCost || Math.random() > anneal(curCost, newCost, i)) {
+        const rand = Math.random();
+        // stepping! 142 Infinity 0.7627713129946292 8 0
+        if (newCost < curCost || rand > anneal(curCost, newCost, i)) {
+            console.log('stepping!', newCost, curCost, rand, i, anneal(curCost, newCost, i));
             curCost = newCost;
             curState = newState;
         }

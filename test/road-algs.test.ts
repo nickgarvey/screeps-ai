@@ -1,20 +1,11 @@
 import * as alg from "../src/room-algs";
 
-test('roomGrid sets some values', () => {
+test('roomGrid sets correct values', () => {
     const valueFn = jest.fn();
-    valueFn.mockImplementation((x: number, y: number) => x * y);
+    valueFn.mockImplementation((x: number, y: number) => 2 * x * y);
     const grid = alg.roomGrid(valueFn);
-    expect(grid[4][5]).toBe(20);
-    expect(grid[0][20]).toBe(0);
-    expect(valueFn).toHaveBeenCalledTimes(alg.ROOM_HEIGHT * alg.ROOM_WIDTH);
-});
-
-test('roomGrid isn\'t too big', () => {
-    const valueFn = jest.fn();
-    valueFn.mockImplementation((_x: number, _y: number) => 0);
-    const grid = alg.roomGrid(valueFn);
-    expect(grid).not.toContain(alg.ROOM_HEIGHT);
-    expect(grid[1]).not.toContain(alg.ROOM_HEIGHT);
+    expect(grid.get(4, 5)).toBe(4 * 2 * 5);
+    expect(grid.get(0, 20)).toBe(0);
     expect(valueFn).toHaveBeenCalledTimes(alg.ROOM_HEIGHT * alg.ROOM_WIDTH);
 });
 

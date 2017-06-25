@@ -1,10 +1,5 @@
 import {ROOM_HEIGHT, ROOM_WIDTH, roomGrid, simulatedAnneal} from "./room-algs";
 
-interface RoomState {
-    extensions: Array<[number, number]>,
-    towers:  Array<[number, number]>,
-}
-
 function randXY(): [number, number] {
     return [Math.round(Math.random() * ROOM_WIDTH), Math.round(Math.random() * ROOM_HEIGHT)];
 }
@@ -19,16 +14,18 @@ function jiggleCoord(coord: [number, number]): [number, number] {
     return [coord[0] + xOff, coord[1] + yOff];
 }
 
-function maybeCanBuild(x: number, y: number) {
-    // can't build on the edges
-    return x >= 2 && x < ROOM_WIDTH - 1 && y >= 2 && y < ROOM_HEIGHT - 1;
-}
-
-function getBuildableGrid(room: Room): Array<Array<boolean>> {
+function getBuildableGrid(room: Room): RoomGrid<boolean> {
     const isBuildable = (x: number, y: number) => {
+        if (x < 2 || x > ROOM_WIDTH - 3) {
+            return false;
+        }
+        if (y < 2 || y > ROOM_HEIGHT - 3) {
+            return false;
+        }
         if (Game.map.getTerrainAt(x, y, room.name) === "wall") {
             return false;
         }
+
         const structures = room.lookForAt(LOOK_STRUCTURES, x, y) as Structure[];
         for (const structure of structures) {
             if (_.contains(OBSTACLE_OBJECT_TYPES, structure.structureType)) {
@@ -38,6 +35,44 @@ function getBuildableGrid(room: Room): Array<Array<boolean>> {
         return true;
     };
     return roomGrid(isBuildable);
+}
+
+function getCached(
+    room: Room,
+    numExtensions: number,
+    numTowers: number,
+): RoomState | null {
+    if (!Memory.plan) {
+        return null;
+    }
+    let id = [room.name, numExtensions, numTowers].join(":");
+    let plan = Memory.plan[id];
+    return plan || null;
+}
+
+function setCached(
+    room: Room,
+    numExtensions: number,
+    numTowers: number,
+    state: RoomState,
+): void {
+    let id = [room.name, numExtensions, numTowers].join(":");
+    if (!Memory.plan) {
+        Memory.plan = {};
+    }
+    Memory.plan[id] = state;
+}
+
+const printState = JSON.stringify;
+
+function printGrid(grid: RoomGrid<boolean>) {
+    for (let y = 0; y < ROOM_HEIGHT; y++) {
+        let toPrint = [];
+        for (let x = 0; x < ROOM_WIDTH; x++) {
+            toPrint.push(grid.get(x, y) ? '-' : 'O');
+        }
+        console.log(toPrint);
+    }
 }
 
 export function buildRoomPlan(
@@ -58,7 +93,7 @@ export function buildRoomPlan(
     };
 
     const step = (state: RoomState, curCost: number) => {
-        if (curCost === Number.MAX_SAFE_INTEGER) {
+        if (curCost === Number.POSITIVE_INFINITY) {
             return randState();
         }
         let newState = {...state};
@@ -73,25 +108,46 @@ export function buildRoomPlan(
     };
 
     const buildableGrid = getBuildableGrid(room);
+    printGrid(buildableGrid);
     const sources = room.find(FIND_SOURCES) as Source[];
     const cost = (state: RoomState) => {
         let cost = 0;
         for (const [x, y] of state.extensions) {
-            if (!maybeCanBuild(x, y) || !buildableGrid[x][y]) {
-                return Number.MAX_SAFE_INTEGER;
+            if (!buildableGrid.get(x, y)) {
+                return Number.POSITIVE_INFINITY;
             }
             for (const source of sources) {
                 cost += source.pos.getRangeTo(x, y);
             }
         }
         for (const [x, y] of state.towers) {
-            if (!maybeCanBuild(x, y) || !buildableGrid[x][y]) {
-                return Number.MAX_SAFE_INTEGER;
+            if (!buildableGrid.get(x, y)) {
+                return Number.POSITIVE_INFINITY;
             }
         }
+        // TODO collide logic
         return cost;
     };
-    const result = simulatedAnneal(randState(), step, cost);
-    console.log(JSON.stringify(result[0]), result[1]);
-    return result[0];
+    let startState = getCached(room, numExtensions, numTowers) || randState();
+    console.log('start state:', printState(startState), cost(startState));
+    const [result, resultCost] = simulatedAnneal(startState, step, cost, 20);
+    setCached(room, numExtensions, numTowers, result);
+    console.log('end state:', printState(result), resultCost);
+    return result;
+}
+
+export function drawRoomState(
+    state: RoomState,
+    room: Room,
+) {
+    _.forEach(
+        state.extensions,
+        e => room.visual.text('E', e[0], e[1],
+            {opacity: 0.7, backgroundColor: 'green'}),
+    );
+    _.forEach(
+        state.towers,
+        e => room.visual.text('T', e[0], e[1],
+            {opacity: 0.7, backgroundColor: 'blue'}),
+    );
 }

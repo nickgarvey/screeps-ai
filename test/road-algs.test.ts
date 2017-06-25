@@ -13,6 +13,10 @@ test('simulatedAnneal follows down slope', () => {
     expect(alg.simulatedAnneal(0, x => x + 1, x => -x, 20, 1)[0]).toBe(20);
 });
 
+test('greedyMinimizer follows down slope', () => {
+    expect(alg.greedyMinimizer(0, x => x + 1, x => -x, 20)[0]).toBe(20);
+});
+
 test('simulatedAnneal finds min of array', () => {
     let array: Array<number> = [];
     for (let i = -15; i < 15; i++) {
@@ -20,11 +24,27 @@ test('simulatedAnneal finds min of array', () => {
     }
 
     const nextFunc = (index: number) => Math.random() < 0.5
-        ? array[Math.max(index-1, 0)]
-        : array[Math.min(index+1, 30)];
+        ? Math.max(index-1, 0)
+        : Math.min(index+1, array.length - 1);
 
     const costFunc = (index: number) => array[index];
     const result = alg.simulatedAnneal(15, nextFunc, costFunc)[0];
+    // allow some options as we might have gotten unlikely with a jump
+    expect([14, 15, 16]).toContain(result);
+});
+
+test('greedyMinimizer finds min of array', () => {
+    let array: Array<number> = [];
+    for (let i = -15; i < 15; i++) {
+        array.push(Math.abs(i));
+    }
+
+    const nextFunc = (index: number) => Math.random() < 0.5
+        ? Math.max(index-1, 0)
+        : Math.min(index+1, array.length - 1);
+
+    const costFunc = (index: number) => array[index];
+    const result = alg.greedyMinimizer(15, nextFunc, costFunc)[0];
     // allow some options as we might have gotten unlikely with a jump
     expect([14, 15, 16]).toContain(result);
 });
@@ -40,12 +60,28 @@ test('simulatedAnneal escapes local min of array', () => {
     array[0] = 10;
 
     const nextFunc = (index: number) => Math.random() < 0.5
-        ? array[Math.max(index-1, 0)]
-        : array[Math.min(index+1, 30)];
+        ? Math.max(index-1, 0)
+        : Math.min(index+1, array.length - 1);
 
     const costFunc = (index: number) => array[index];
-    const result = alg.simulatedAnneal(0, nextFunc, costFunc, 10000)[0];
+    const result = alg.simulatedAnneal(0, nextFunc, costFunc, 1000, 1000)[0];
     // allow some options as we might have gotten unlikely with a jump
     expect(result).toBeGreaterThan(5);
     expect(result).toBeLessThan(20);
+});
+
+test('greedyMinimizer does not escapes local min of array', () => {
+    let array: Array<number> = [];
+    for (let i = -15; i < 15; i++) {
+        array.push(Math.abs(i));
+    }
+    array[0] = 10;
+
+    const nextFunc = (index: number) => Math.random() < 0.5
+        ? Math.max(index-1, 0)
+        : Math.min(index+1, array.length - 1);
+
+    const costFunc = (index: number) => array[index];
+    const result = alg.greedyMinimizer(0, nextFunc, costFunc);
+    expect(result[0]).toBe(0);
 });

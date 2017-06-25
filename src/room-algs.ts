@@ -1,6 +1,8 @@
 export const ROOM_WIDTH = 50;
 export const ROOM_HEIGHT = 50;
 
+const ANNEAL_COOL_RATE = 0.97;
+
 export function roomGrid<T>(
     gridFunc: (x: number, y: number) => T,
 ): RoomGrid<T> {
@@ -152,7 +154,7 @@ export function simulatedAnneal<S>(
     startTemp = 1,
 ): [S, number] {
     const anneal = (oldCost: number, newCost: number, iteration: number) =>
-        Math.exp((newCost - oldCost) / (startTemp / Math.pow(0.95, iteration)));
+        Math.exp((oldCost - newCost) / (startTemp * Math.pow(ANNEAL_COOL_RATE, iteration)));
 
     let curState = initialState;
     let curCost = costFunction(initialState);
@@ -163,7 +165,29 @@ export function simulatedAnneal<S>(
         }
         const newCost = costFunction(newState);
         const rand = Math.random();
-        if (newCost <= curCost || rand > anneal(curCost, newCost, i)) {
+        if (newCost <= curCost || rand < anneal(curCost, newCost, i)) {
+            curCost = newCost;
+            curState = newState;
+        }
+    }
+    return [curState, curCost];
+}
+
+export function greedyMinimizer<S>(
+    initialState: S,
+    stepFunction: (state: S) => S | null,
+    costFunction: (state: S) => number,
+    iterations = 1000,
+): [S, number] {
+    let curState = initialState;
+    let curCost = costFunction(initialState);
+    for (let i = 0; i < iterations; i++) {
+        const newState = stepFunction(curState);
+        if (newState === null) {
+            continue;
+        }
+        const newCost = costFunction(newState);
+        if (newCost <= curCost) {
             curCost = newCost;
             curState = newState;
         }

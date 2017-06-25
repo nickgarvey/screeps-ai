@@ -41,7 +41,10 @@ export function loop(): void {
     garbageCollect();
 
     if (Game.cpu.bucket > 5000)
-        _.forEach(Game.rooms, r => drawRoomState(buildRoomPlan(r, 10, 1) as RoomState, r));
+        _.forEach(Game.rooms, r => drawRoomState(
+            buildRoomPlan(r, 10, 1) as RoomState,
+            r
+        ));
 
     console.log('END   ticks used:', Math.ceil(Game.cpu.getUsed()));
 }

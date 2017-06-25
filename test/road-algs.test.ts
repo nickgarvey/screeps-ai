@@ -10,7 +10,7 @@ test('roomGrid sets correct values', () => {
 });
 
 test('simulatedAnneal follows down slope', () => {
-    expect(alg.simulatedAnneal(0, (x, _2) => x + 1, x => -x, 20, 1)[0]).toBe(20);
+    expect(alg.simulatedAnneal(0, x => x + 1, x => -x, 20, 1)[0]).toBe(20);
 });
 
 test('simulatedAnneal finds min of array', () => {
@@ -19,7 +19,7 @@ test('simulatedAnneal finds min of array', () => {
         array.push(Math.abs(i));
     }
 
-    const nextFunc = (index: number, _2: number) => Math.random() < 0.5
+    const nextFunc = (index: number) => Math.random() < 0.5
         ? array[Math.max(index-1, 0)]
         : array[Math.min(index+1, 30)];
 
@@ -39,7 +39,7 @@ test('simulatedAnneal escapes local min of array', () => {
     // we surely are fine
     array[0] = 10;
 
-    const nextFunc = (index: number, _2: number) => Math.random() < 0.5
+    const nextFunc = (index: number) => Math.random() < 0.5
         ? array[Math.max(index-1, 0)]
         : array[Math.min(index+1, 30)];
 

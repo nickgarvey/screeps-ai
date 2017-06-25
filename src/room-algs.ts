@@ -144,10 +144,9 @@ export function findClusters(positions: Array<RoomPosition>) {
 
 export const printState = JSON.stringify;
 
-
 export function simulatedAnneal<S>(
     initialState: S,
-    stepFunction: (state: S, cost: number) => S,
+    stepFunction: (state: S) => S | null,
     costFunction: (state: S) => number,
     iterations = 1000,
     startTemp = 1,
@@ -158,7 +157,10 @@ export function simulatedAnneal<S>(
     let curState = initialState;
     let curCost = costFunction(initialState);
     for (let i = 0; i < iterations; i++) {
-        const newState = stepFunction(curState, curCost);
+        const newState = stepFunction(curState);
+        if (newState === null) {
+            continue;
+        }
         const newCost = costFunction(newState);
         const rand = Math.random();
         if (newCost < curCost || rand > anneal(curCost, newCost, i)) {

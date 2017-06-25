@@ -14,7 +14,6 @@
     "noUnusedLocals": true,
 
     "sourceMap": false,
-    "allowJs": true,
     "baseUrl": "src/"
   },
   "compileOnSave": true,

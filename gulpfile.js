@@ -35,7 +35,8 @@ gulp.task('minify', ['typescript', 'make_dist'], (cb) => {
 DEPLOY_DIR = "C:/Users/Nick Garvey/AppData/Local/Screeps/scripts/screeps.com/gulp_out";
 gulp.task('steam_copy', ['minify'], function() {
     del.sync([DEPLOY_DIR + '/*.js', '!' + DEPLOY_DIR], {force: true});
-    return gulp.src('dist/**/*.js')
+    // TODO this is build not dist so I get unminified
+    return gulp.src('build/src/**/*.js')
         .pipe(gulp.dest(DEPLOY_DIR));
 });
 

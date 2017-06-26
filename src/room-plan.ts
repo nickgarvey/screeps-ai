@@ -1,6 +1,6 @@
 import {greedyMinimizer, isObstacle, printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid} from "./room-algs";
 
-const PER_TICK_PATH_ITERATIONS = 10;
+const PER_TICK_PATH_ITERATIONS = 50;
 const JIGGLE_AMOUNT = 5;
 
 function randXY(): [number, number] {
@@ -44,7 +44,7 @@ function getCached(
     room: Room,
     numExtensions: number,
     numTowers: number,
-): RoomState | null {
+): RoomPlanMemory | null {
     if (!Memory.plan) {
         return null;
     }
@@ -52,17 +52,41 @@ function getCached(
     return Memory.plan[id] || null;
 }
 
+enum CostAlgorithm {
+    linear,
+    pathing,
+}
+
 function setCached(
     room: Room,
     numExtensions: number,
     numTowers: number,
     state: RoomState,
+    cost: number,
+    algUsed: CostAlgorithm,
 ): void {
     let id = [room.name, numExtensions, numTowers].join(":");
     if (!_.isObject(Memory.plan)) {
         Memory.plan = {};
     }
-    Memory.plan[id] = state;
+    if (!_.isObject(Memory.plan[id])) {
+        Memory.plan[id] = {
+            // okay to cast, we are about to override
+            currentBest: state,
+            linearHist: [],
+            pathingHist: [],
+        }
+    }
+
+    Memory.plan[id].currentBest = state;
+    switch (algUsed) {
+        case CostAlgorithm.linear:
+            Memory.plan[id].linearHist.push(cost);
+            break;
+        case CostAlgorithm.pathing:
+            Memory.plan[id].pathingHist.push(cost);
+            break;
+    }
 }
 
 export function printGrid(grid: RoomGrid<boolean>) {
@@ -84,6 +108,18 @@ export function allUnique(items: Array<[number, number]>): boolean {
             if (items[i][0] === items[j][0] && items[i][1] === items[j][1]) {
                 return false;
             }
+        }
+    }
+    return true;
+}
+
+export function allSame<T>(items: Array<T>) {
+    let first = null;
+    for (let i = 0; i < items.length; i++) {
+        if (first === null) {
+            first = items[i];
+        } else if (first !== items[i]) {
+            return false;
         }
     }
     return true;
@@ -125,6 +161,10 @@ function validState(
 function buildPathFindingCostFunction(room: Room) {
     const sources = room.find(FIND_SOURCES) as Source[];
     const structures = room.find(FIND_STRUCTURES) as Structure[];
+    const spawns = _.filter(
+        structures,
+        s => s.structureType === STRUCTURE_SPAWN
+    ) as Structure[];
 
     // we expect that no coordinates are either
     // 1. in walls
@@ -142,7 +182,7 @@ function buildPathFindingCostFunction(room: Room) {
             for (const source of sources) {
                 const search = PathFinder.search(
                     room.getPositionAt(x, y) as RoomPosition,
-                    [{pos: source.pos, range: 1}],
+                    [{pos: source.pos, range: 2}],
                     {
                         roomCallback: (_r) => { return costMat; },
                         plainCost: 1,
@@ -161,6 +201,19 @@ function buildPathFindingCostFunction(room: Room) {
         return cost;
     };
 
+    const towerCost = (
+        towers: Array<[number, number]>
+    ) => {
+        let cost = 0;
+        for (const [x, y] of towers) {
+            for (const spawn of spawns) {
+                // TODO 5 to constant
+                cost += Math.abs(5 - spawn.pos.getRangeTo(x, y));
+            }
+        }
+        return cost;
+    }
+
     return (state: RoomState): number => {
         // load in the structures we have
         const costMat = new PathFinder.CostMatrix();
@@ -172,7 +225,7 @@ function buildPathFindingCostFunction(room: Room) {
                 costMat.set(s.pos.x, s.pos.y, 0XFF0);
             }
         }
-        return extensionsCost(state.extensions, costMat);
+        return extensionsCost(state.extensions, costMat) + towerCost(state.towers);
     };
 }
 
@@ -248,27 +301,60 @@ function randState(
     }
 }
 
+export function chooseAlg(
+    memory: RoomPlanMemory | null,
+): CostAlgorithm | "finished" {
+    // just started
+    if (memory === null) {
+        return CostAlgorithm.linear;
+    }
+    // pathing converged
+    if (memory.pathingHist.length > 10) {
+        const slice = _.slice(memory.pathingHist, memory.pathingHist.length - 10);
+        if (allSame(slice)) {
+            return "finished";
+        }
+    }
+    // in the middle of pathing
+    if (memory.pathingHist.length > 0) {
+        return CostAlgorithm.pathing;
+    }
+    // in the middle of linear
+    if (memory.linearHist.length < 20) {
+        return CostAlgorithm.linear;
+    }
+    // finished linear, move to pathing
+    if (allSame(_.slice(memory.linearHist, memory.linearHist.length - 5))) {
+        return CostAlgorithm.pathing;
+    }
+    // still in linear
+    return CostAlgorithm.linear;
+}
+
 export function buildRoomPlan(
     room: Room,
     numExtensions: number,
     numTowers: number,
-): number | RoomState {
-    // TODO algorithm:
-    // get current state
-    // if on real cost, use it
-    // else
-    // get average change from last iterations
-    // if low enough, then use expensive cost function
-    
-    const buildableGrid = getBuildableGrid(room);
+): RoomState | null {
+    // TODO good place for LRU cache so if we need to rerun with
+    // same parameters after attack we don't get old data
+    let saved: RoomPlanMemory | null = getCached(room, numExtensions, numTowers);
 
+    // if we have converged then return!
+    const costAlg = chooseAlg(saved);
+    if (costAlg === "finished") {
+        return (saved && saved.currentBest) || null;
+    }
+
+    const buildableGrid = getBuildableGrid(room);
     const stepFn = buildStepFunction(numExtensions, numTowers, buildableGrid);
-    const costFn = numExtensions === 0
+    const costFn = costAlg === CostAlgorithm.linear
         ? buildLinearCostFunction(room)
         : buildPathFindingCostFunction(room);
 
-    let startState = getCached(room, numExtensions, numTowers)
-        || randState(numExtensions, numTowers, buildableGrid);
+    let startState = saved
+        ? saved.currentBest
+        : randState(numExtensions, numTowers, buildableGrid);
 
     console.log('start state:', printState(startState), costFn(startState));
     const [result, resultCost] = greedyMinimizer(
@@ -278,7 +364,7 @@ export function buildRoomPlan(
         PER_TICK_PATH_ITERATIONS);
     console.log('end state:', printState(result), resultCost);
 
-    setCached(room, numExtensions, numTowers, result);
+    setCached(room, numExtensions, numTowers, result, resultCost, costAlg);
     return result;
 }
 
@@ -297,3 +383,4 @@ export function drawRoomState(
             {opacity: 0.7, backgroundColor: 'blue'}),
     );
 }
+

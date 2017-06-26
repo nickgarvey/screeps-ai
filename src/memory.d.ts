@@ -3,15 +3,21 @@ interface CreepMemory {
     selection: string | null | undefined;
 }
 
-
 interface RoomState {
     extensions: Array<[number, number]>,
     towers:  Array<[number, number]>,
 }
 
+interface RoomPlanMemory {
+    currentBest: RoomState;
+    // cost histories
+    linearHist: Array<number>;
+    pathingHist: Array<number>;
+}
+
 interface Memory {
     plan: {
-        [name: string]: RoomState;
+        [room: string]: RoomPlanMemory;
     };
 }
 

@@ -1,7 +1,6 @@
-import {printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid, simulatedAnneal} from "./room-algs";
+import {greedyMinimizer, printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid} from "./room-algs";
 
-const START_TEMP = 200;
-const ANNEAL_ITERATIONS = 15;
+const PER_TICK_PATH_ITERATIONS = 15;
 const JIGGLE_AMOUNT = 5;
 
 function randXY(): [number, number] {
@@ -50,8 +49,7 @@ function getCached(
         return null;
     }
     let id = [room.name, numExtensions, numTowers].join(":");
-    let plan = Memory.plan[id];
-    return plan || null;
+    return Memory.plan[id] || null;
 }
 
 function setCached(
@@ -61,7 +59,7 @@ function setCached(
     state: RoomState,
 ): void {
     let id = [room.name, numExtensions, numTowers].join(":");
-    if (!Memory.plan) {
+    if (!_.isObject(Memory.plan)) {
         Memory.plan = {};
     }
     Memory.plan[id] = state;
@@ -95,7 +93,14 @@ function validState(
     state: RoomState,
     buildableGrid: RoomGrid<boolean>,
 ): boolean {
+    const boundsCheck = (x: number, y: number) =>
+        x >= 0 && x < ROOM_WIDTH && y >= 0 && y < ROOM_HEIGHT;
     const allCoords = _.union(state.extensions, state.towers);
+    for (let i = 0; i < allCoords.length; i++) {
+        if (!boundsCheck(allCoords[i][0], allCoords[i][1])) {
+            return false;
+        }
+    }
     if (!allUnique(allCoords)) {
         return false;
     }
@@ -192,12 +197,11 @@ export function buildRoomPlan(
         || randState(numExtensions, numTowers, buildableGrid);
 
     console.log('start state:', printState(startState), costFn(startState));
-    const [result, resultCost] = simulatedAnneal(
+    const [result, resultCost] = greedyMinimizer(
         startState,
         stepFn,
         costFn,
-        ANNEAL_ITERATIONS,
-        START_TEMP);
+        PER_TICK_PATH_ITERATIONS);
     console.log('end state:', printState(result), resultCost);
 
     setCached(room, numExtensions, numTowers, result);

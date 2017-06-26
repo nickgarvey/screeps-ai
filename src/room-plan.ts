@@ -1,7 +1,9 @@
 import {greedyMinimizer, isObstacle, printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid} from "./room-algs";
 
-const PER_TICK_PATH_ITERATIONS = 50;
+const PER_TICK_PATH_ITERATIONS = 200;
 const JIGGLE_AMOUNT = 5;
+const LINEAR_CONVERGE = 3;
+const PATHING_CONVERGE = 10;
 
 function randXY(): [number, number] {
     return [Math.round(Math.random() * ROOM_WIDTH), Math.round(Math.random() * ROOM_HEIGHT)];
@@ -18,6 +20,7 @@ function jiggleCoord(coord: [number, number], jiggleAmount: number = 1): [number
 }
 
 function getBuildableGrid(room: Room): RoomGrid<boolean> {
+    const sources = room.find(FIND_SOURCES) as Source[];
     const isBuildable = (x: number, y: number) => {
         if (x < 2 || x > ROOM_WIDTH - 3) {
             return false;
@@ -30,8 +33,14 @@ function getBuildableGrid(room: Room): RoomGrid<boolean> {
         }
 
         const structures = room.lookForAt(LOOK_STRUCTURES, x, y) as Structure[];
+
         for (const structure of structures) {
             if (_.contains(OBSTACLE_OBJECT_TYPES, structure.structureType)) {
+                return false;
+            }
+        }
+        for (const source of sources) {
+            if (source.pos.inRangeTo(x, y, 2)) {
                 return false;
             }
         }
@@ -179,10 +188,11 @@ function buildPathFindingCostFunction(room: Room) {
 
         // extensions
         for (const [x, y] of exs) {
+            // minimize distance for creeps to walk after gathering
             for (const source of sources) {
                 const search = PathFinder.search(
                     room.getPositionAt(x, y) as RoomPosition,
-                    [{pos: source.pos, range: 2}],
+                    [{pos: source.pos, range: 1}],
                     {
                         roomCallback: (_r) => { return costMat; },
                         plainCost: 1,
@@ -197,6 +207,12 @@ function buildPathFindingCostFunction(room: Room) {
                 }
                 cost += search.cost;
             }
+            // pull them together
+            for (const [ox, oy] of exs) {
+                cost += Math.max(Math.abs(x - ox), Math.abs(y - oy));
+            }
+
+
         }
         return cost;
     };
@@ -309,8 +325,8 @@ export function chooseAlg(
         return CostAlgorithm.linear;
     }
     // pathing converged
-    if (memory.pathingHist.length > 10) {
-        const slice = _.slice(memory.pathingHist, memory.pathingHist.length - 10);
+    if (memory.pathingHist.length > PATHING_CONVERGE * 2) {
+        const slice = _.slice(memory.pathingHist, memory.pathingHist.length - PATHING_CONVERGE);
         if (allSame(slice)) {
             return "finished";
         }
@@ -320,11 +336,11 @@ export function chooseAlg(
         return CostAlgorithm.pathing;
     }
     // in the middle of linear
-    if (memory.linearHist.length < 20) {
+    if (memory.linearHist.length < LINEAR_CONVERGE * 2) {
         return CostAlgorithm.linear;
     }
     // finished linear, move to pathing
-    if (allSame(_.slice(memory.linearHist, memory.linearHist.length - 5))) {
+    if (allSame(_.slice(memory.linearHist, memory.linearHist.length - LINEAR_CONVERGE))) {
         return CostAlgorithm.pathing;
     }
     // still in linear

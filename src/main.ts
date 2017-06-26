@@ -1,9 +1,8 @@
 import * as Spawn_ from "spawn";
 import * as Creep_ from "creep";
 import * as Cpu_ from "cpu";
-import * as Extension_ from "extension";
 import * as Roads_ from "roads";
-import {buildRoomPlan, drawRoomState} from "./room-plan";
+import {buildIfNeeded} from "./room-plan";
 
 function garbageCollect() {
     for (const name of Object.keys(Memory.creeps)) {
@@ -16,9 +15,9 @@ function garbageCollect() {
 }
 
 function buildConstructionSites() {
-    if (Game.time % 5 === 2) {
-        console.log('extension building');
-        _.forEach(Game.rooms, Extension_.buildSiteIfNeeded);
+    if (Game.cpu.bucket > 5000) {
+        console.log('structure building');
+        _.forEach(Game.rooms, buildIfNeeded);
     } else if (Game.time % 15 === 0) {
         console.log('road building');
         for (const room of _.values(Game.rooms) as Room[]) {
@@ -39,12 +38,6 @@ export function loop(): void {
     // RoomVisual_.heatMap(_.values(Game.rooms)[0], RoomAlgs_.roomGrid((x, y) => x * y));
 
     garbageCollect();
-
-    if (Game.cpu.bucket > 5000)
-        _.forEach(Game.rooms, r => drawRoomState(
-            buildRoomPlan(r, 10, 1) as RoomState,
-            r
-        ));
 
     console.log('END   ticks used:', Math.ceil(Game.cpu.getUsed()));
 }

@@ -339,6 +339,10 @@ export function buildRoomPlan(
     // TODO good place for LRU cache so if we need to rerun with
     // same parameters after attack we don't get old data
     let saved: RoomPlanMemory | null = getCached(room, numExtensions, numTowers);
+    console.log('build:', JSON.stringify(saved));
+    if (saved) {
+        drawRoomState(saved.currentBest, room);
+    }
 
     // if we have converged then return!
     const costAlg = chooseAlg(saved);
@@ -352,7 +356,7 @@ export function buildRoomPlan(
         ? buildLinearCostFunction(room)
         : buildPathFindingCostFunction(room);
 
-    let startState = saved
+    let startState = saved && saved.currentBest
         ? saved.currentBest
         : randState(numExtensions, numTowers, buildableGrid);
 
@@ -365,7 +369,7 @@ export function buildRoomPlan(
     console.log('end state:', printState(result), resultCost);
 
     setCached(room, numExtensions, numTowers, result, resultCost, costAlg);
-    return result;
+    return null;
 }
 
 export function drawRoomState(
@@ -384,3 +388,44 @@ export function drawRoomState(
     );
 }
 
+
+// This doesn't do roads yet
+export function buildIfNeeded(room: Room) {
+    if (!room.controller) {
+        return;
+    }
+    const countType = (objs: Array<Structure> | Array<ConstructionSite>, type: string) => {
+        let count = 0;
+        for (const o of objs) {
+            if (o.structureType === type) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    const constructionSites = room.find(FIND_CONSTRUCTION_SITES) as ConstructionSite[];
+    const structures = room.find(FIND_STRUCTURES) as Structure[];
+
+    let numExtensions = countType(structures, STRUCTURE_EXTENSION)
+        + countType(constructionSites, STRUCTURE_EXTENSION);
+    let numTowers = countType(structures, STRUCTURE_TOWER)
+        + countType(constructionSites, STRUCTURE_TOWER);
+
+    const neededExtensions = CONTROLLER_STRUCTURES["extension"][room.controller.level] - numExtensions;
+    const neededTower = CONTROLLER_STRUCTURES["tower"][room.controller.level] - numTowers;
+
+    if (!(neededExtensions > 0 || neededTower > 0)) {
+        return;
+    }
+    const plan = buildRoomPlan(room, Math.max(neededExtensions, 0), Math.max(neededTower, 0));
+    if (plan !== null) {
+        for (const [x, y] of plan.extensions) {
+            room.createConstructionSite(x, y, STRUCTURE_EXTENSION);
+        }
+        for (const [x, y] of plan.towers) {
+            room.createConstructionSite(x, y, STRUCTURE_TOWER);
+        }
+    }
+
+}

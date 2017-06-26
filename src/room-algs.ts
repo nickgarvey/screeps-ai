@@ -15,6 +15,16 @@ export function roomGrid<T>(
     };
 }
 
+export function costMatrix(
+    costFunction: (x: number, y: number) => number,
+): CostMatrix {
+    let matrix = new PathFinder.CostMatrix();
+    for (const [x, y] of roomCoords()) {
+        matrix.set(x, y, costFunction(x, y));
+    }
+    return matrix;
+}
+
 export function roomCoords(): Array<[number, number]> {
     let arr : Array<[number, number]> = [];
     for (let x = 0; x < ROOM_WIDTH; x++) {

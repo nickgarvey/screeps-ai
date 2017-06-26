@@ -1,6 +1,6 @@
-import {greedyMinimizer, printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid} from "./room-algs";
+import {greedyMinimizer, isObstacle, printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid} from "./room-algs";
 
-const PER_TICK_PATH_ITERATIONS = 15;
+const PER_TICK_PATH_ITERATIONS = 10;
 const JIGGLE_AMOUNT = 5;
 
 function randXY(): [number, number] {
@@ -89,13 +89,23 @@ export function allUnique(items: Array<[number, number]>): boolean {
     return true;
 }
 
+// no array copies
+export function* stateCoordItr(state: RoomState) {
+    for (let i = 0; i < state.extensions.length; i++) {
+        yield state.extensions[i];
+    }
+    for (let i = 0; i < state.towers.length; i++) {
+        yield state.towers[i];
+    }
+}
+
 function validState(
     state: RoomState,
     buildableGrid: RoomGrid<boolean>,
 ): boolean {
     const boundsCheck = (x: number, y: number) =>
         x >= 0 && x < ROOM_WIDTH && y >= 0 && y < ROOM_HEIGHT;
-    const allCoords = _.union(state.extensions, state.towers);
+    const allCoords = Array.from(stateCoordItr(state));
     for (let i = 0; i < allCoords.length; i++) {
         if (!boundsCheck(allCoords[i][0], allCoords[i][1])) {
             return false;
@@ -112,7 +122,62 @@ function validState(
     return true;
 }
 
-function buildCostFunction(room: Room) {
+function buildPathFindingCostFunction(room: Room) {
+    const sources = room.find(FIND_SOURCES) as Source[];
+    const structures = room.find(FIND_STRUCTURES) as Structure[];
+
+    // we expect that no coordinates are either
+    // 1. in walls
+    // 2. in existing structures
+    // 3. on top of each other
+    const extensionsCost = (
+        exs: Array<[number, number]>,
+        costMat: CostMatrix,
+    ) => {
+        let cost = 0;
+        // TODO ensure not blocking source
+
+        // extensions
+        for (const [x, y] of exs) {
+            for (const source of sources) {
+                const search = PathFinder.search(
+                    room.getPositionAt(x, y) as RoomPosition,
+                    [{pos: source.pos, range: 1}],
+                    {
+                        roomCallback: (_r) => { return costMat; },
+                        plainCost: 1,
+                        swampCost: 2,
+                        // https://github.com/screepers/typed-screeps/pull/5
+                        // maxCost: 200, // TODO optimize here!
+                        heuristicWeight: 1.2,
+                    }
+                );
+                if (search.incomplete) {
+                    return Number.POSITIVE_INFINITY;
+                }
+                cost += search.cost;
+            }
+        }
+        return cost;
+    };
+
+    return (state: RoomState): number => {
+        // load in the structures we have
+        const costMat = new PathFinder.CostMatrix();
+        for (const [x, y] of stateCoordItr(state)) {
+            costMat.set(x, y, 0xFF);
+        }
+        for (const s of structures) {
+            if (isObstacle(s)) {
+                costMat.set(s.pos.x, s.pos.y, 0XFF0);
+            }
+        }
+        return extensionsCost(state.extensions, costMat);
+    };
+}
+
+
+function buildLinearCostFunction(room: Room) {
     const sources = room.find(FIND_SOURCES) as Source[];
 
     // the state must be valid before entering this function
@@ -188,10 +253,19 @@ export function buildRoomPlan(
     numExtensions: number,
     numTowers: number,
 ): number | RoomState {
+    // TODO algorithm:
+    // get current state
+    // if on real cost, use it
+    // else
+    // get average change from last iterations
+    // if low enough, then use expensive cost function
+    
     const buildableGrid = getBuildableGrid(room);
 
     const stepFn = buildStepFunction(numExtensions, numTowers, buildableGrid);
-    const costFn = buildCostFunction(room);
+    const costFn = numExtensions === 0
+        ? buildLinearCostFunction(room)
+        : buildPathFindingCostFunction(room);
 
     let startState = getCached(room, numExtensions, numTowers)
         || randState(numExtensions, numTowers, buildableGrid);

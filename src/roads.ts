@@ -6,6 +6,7 @@ export function roadSites(room: Room): RoomPosition[] {
     if (extensions(room).length < 5) {
         return [];
     }
+    console.log('here');
 
     // TODO connect sources to deposits, but not sources to sources
 

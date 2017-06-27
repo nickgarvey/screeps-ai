@@ -1,9 +1,11 @@
 import {greedyMinimizer, isObstacle, printState, ROOM_HEIGHT, ROOM_WIDTH, roomGrid} from "./room-algs";
 
-const PER_TICK_PATH_ITERATIONS = 200;
+const PER_TICK_PATH_ITERATIONS = 100;
 const JIGGLE_AMOUNT = 5;
-const LINEAR_CONVERGE = 3;
+const LINEAR_CONVERGE = 2;
 const PATHING_CONVERGE = 10;
+// keep under 1 unless they will value being close more than keeping a clear path
+const PULL_WEIGHT = 0.2;
 
 function randXY(): [number, number] {
     return [Math.round(Math.random() * ROOM_WIDTH), Math.round(Math.random() * ROOM_HEIGHT)];
@@ -173,7 +175,11 @@ function buildPathFindingCostFunction(room: Room) {
     const spawns = _.filter(
         structures,
         s => s.structureType === STRUCTURE_SPAWN
-    ) as Structure[];
+    ) as Spawn[];
+    const extensions = _.filter(
+        structures,
+        s => s.structureType === STRUCTURE_EXTENSION
+    ) as Extension[];
 
     // we expect that no coordinates are either
     // 1. in walls
@@ -185,9 +191,9 @@ function buildPathFindingCostFunction(room: Room) {
     ) => {
         let cost = 0;
         // TODO ensure not blocking source
-
+        const all_extensions = _.union(_.map(extensions, e => [e.pos.x, e.pos.y]), exs);
         // extensions
-        for (const [x, y] of exs) {
+        for (const [x, y] of all_extensions) {
             // minimize distance for creeps to walk after gathering
             for (const source of sources) {
                 const search = PathFinder.search(
@@ -209,7 +215,7 @@ function buildPathFindingCostFunction(room: Room) {
             }
             // pull them together
             for (const [ox, oy] of exs) {
-                cost += Math.max(Math.abs(x - ox), Math.abs(y - oy));
+                cost += PULL_WEIGHT * Math.max(Math.abs(x - ox), Math.abs(y - oy));
             }
 
 

@@ -11,7 +11,7 @@ const TO_FILL_PRIORITIES : FillPriorities = {
 export function structuresToFill(room: Room): Structure[] {
     const structures = room.find(
         FIND_MY_STRUCTURES,
-        {filter: (s: Structure) => _.get(s, 'energyCapacity')},
+        {filter: (s: Structure) => _.get(s, 'energy', 0) < _.get(s, 'energyCapacity', 0)},
     ) as Structure[];
     const group = _.groupBy(structures, s => s.structureType);
     for (const priority in TO_FILL_PRIORITIES) {

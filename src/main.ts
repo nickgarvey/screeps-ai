@@ -18,7 +18,7 @@ function buildConstructionSites() {
     if (Game.cpu.bucket > 5000) {
         console.log('structure building');
         _.forEach(Game.rooms, buildIfNeeded);
-    } else if (Game.time % 15 === 0) {
+    } else if (Game.time % 1 === 0) {
         console.log('road building');
         for (const room of _.values(Game.rooms) as Room[]) {
             const positions = Roads_.roadSites(room);

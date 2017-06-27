@@ -171,7 +171,7 @@ function validState(
 
 function buildPathFindingCostFunction(room: Room) {
     const sources = room.find(FIND_SOURCES) as Source[];
-    const structures = room.find(FIND_STRUCTURES) as Structure[];
+    const structures = room.find(FIND_MY_STRUCTURES) as Structure[];
     const spawns = _.filter(
         structures,
         s => s.structureType === STRUCTURE_SPAWN
@@ -205,7 +205,9 @@ function buildPathFindingCostFunction(room: Room) {
                         swampCost: 2,
                         // https://github.com/screepers/typed-screeps/pull/5
                         // maxCost: 200, // TODO optimize here!
-                        heuristicWeight: 1.2,
+                        // this _must_ be 1, other wise it can find a bad path on a later iteration and
+                        // we will never converge
+                        heuristicWeight: 1,
                     }
                 );
                 if (search.incomplete) {

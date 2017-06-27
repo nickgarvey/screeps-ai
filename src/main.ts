@@ -18,7 +18,7 @@ function buildConstructionSites() {
     if (Game.cpu.bucket < 2000) {
         return;
     }
-    if (Game.time % 10 === 0) {
+    if (Game.time % 1 === 0) {
         console.log('structure building');
         _.forEach(Game.rooms, buildIfNeeded);
     }

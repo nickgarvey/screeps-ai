@@ -111,7 +111,7 @@ function badSign(creep: Creep) {
         return;
     }
     const sign = creep.room.controller.sign;
-    return sign.username !== creep.owner.username || sign.text !== SIGN_TEXT;
+    return sign && (sign.username !== creep.owner.username || sign.text !== SIGN_TEXT);
 }
 
 const SIGN_TEXT = "http://github.com/nickgarvey/screeps-ai";

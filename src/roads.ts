@@ -1,33 +1,39 @@
 import {findClusters, centerFinder} from "room-algs";
-import {extensions} from "extension";
+
+const MIN_ROOM_LEVEL_ROADS = 3;
 
 export function roadSites(room: Room): RoomPosition[] {
-    // TODO constant
-    if (extensions(room).length < 5) {
+    if (room.controller && room.controller.level < MIN_ROOM_LEVEL_ROADS) {
         return [];
     }
-    console.log('here');
 
-    // TODO connect sources to deposits, but not sources to sources
+    const pendingRoads = room.find(
+        FIND_MY_CONSTRUCTION_SITES,
+        {filter: (s: Structure) => s.structureType === STRUCTURE_ROAD}
+    );
+    // avoid a ton of roads to the same places
+    if (pendingRoads.length) {
+        return [];
+    }
 
-    const structures = room.find(FIND_MY_STRUCTURES) as _HasRoomPosition[];
-    const sources = room.find(FIND_SOURCES)as _HasRoomPosition[];
+    const structures = room.find(FIND_MY_STRUCTURES) as RoomObject[];
+    const sources = room.find(FIND_SOURCES)as RoomObject[];
     const importantPositions = _.map(sources.concat(structures), o => o.pos);
-    // list of positions grouped together
-    const groups = findClusters(importantPositions);
 
-    if (_.isEmpty(groups)) {
+    // list of positions grouped together
+    const clusters = findClusters(importantPositions);
+    if (_.isEmpty(clusters)) {
         return [];
     }
 
     let paths = [];
-    for (let i = 0; i < groups.length; i++) {
-        const group = groups[i];
+    for (let i = 0; i < clusters.length; i++) {
+        const group = clusters[i];
         const center = centerFinder(group);
-        for (let j = i + 1; j < groups.length; j++) {
-            // TODO favor existing roads slightly
-            const options = {ignoreCreeps: true};
-            const closest = center.findClosestByPath(groups[j], options);
+        for (let j = i + 1; j < clusters.length; j++) {
+            // try to avoid swamps but it's okay to build over them
+            const options = {ignoreCreeps: true, swampCost: 2};
+            const closest = center.findClosestByPath(clusters[j], options);
             paths.push(center.findPathTo(closest, options));
         }
     }

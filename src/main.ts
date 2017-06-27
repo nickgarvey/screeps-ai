@@ -15,32 +15,33 @@ function garbageCollect() {
 }
 
 function buildConstructionSites() {
-    if (Game.cpu.bucket > 5000) {
+    if (Game.cpu.bucket < 2000) {
+        return;
+    }
+    if (Game.time % 10 === 0) {
         console.log('structure building');
         _.forEach(Game.rooms, buildIfNeeded);
-    } else if (Game.time % 1 === 0) {
+    }
+    if (Game.time % 10 === 5) {
         console.log('road building');
         for (const room of _.values(Game.rooms) as Room[]) {
             const positions = Roads_.roadSites(room);
             positions.forEach(p => p.createConstructionSite(STRUCTURE_ROAD));
         }
-    } else if (Game.time % 1 === 0) {
-        // _.forEach(Game.rooms, room => console.log(room, Tower_.numTowers(room)));
     }
 }
 
 export function loop(): void {
     console.log('START ticks available:', Game.cpu.tickLimit, Game.cpu.bucket);
-    buildConstructionSites();
     _.forEach(Game.spawns, Spawn_.doSpawn);
     _.forEach(Game.creeps, Creep_.run);
 
-    // RoomVisual_.heatMap(_.values(Game.rooms)[0], RoomAlgs_.roomGrid((x, y) => x * y));
+    buildConstructionSites();
 
     garbageCollect();
 
     console.log('END   ticks used:', Math.ceil(Game.cpu.getUsed()));
 }
 
-// avoid warnings / possible removal of loop via optimization
+// avoid warnings
 if (!Game) loop();

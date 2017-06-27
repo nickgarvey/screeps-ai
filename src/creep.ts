@@ -1,5 +1,5 @@
 import {structuresToFill} from "energy";
-import {selectSource} from "source";
+import {selectSource, sourceOccupied} from "source";
 
 const UPGRADE_THRESHOLD = 2000;
 
@@ -33,7 +33,7 @@ function collect(creep: Creep) {
     if (source_id) {
         source = Game.getObjectById(source_id) as (Source | null);
     }
-    if (source === null) {
+    if (source === null || sourceOccupied(source)) {
         source = selectSource(creep);
     }
 

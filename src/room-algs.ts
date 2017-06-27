@@ -46,20 +46,24 @@ export function isObstacle(obj: Structure): boolean {
     return _.contains(OBSTACLE_OBJECT_TYPES, obj.structureType);
 }
 
-function nextInSearch(room: Room, pos: RoomPosition, seen: Set<RoomPosition>): RoomPosition[] {
+export function positionsAround(pos: RoomPosition): RoomPosition[] {
+    const room = Game.rooms[pos.roomName];
     return _.filter([
         room.getPositionAt(pos.x + 1, pos.y),
         room.getPositionAt(pos.x - 1, pos.y),
         room.getPositionAt(pos.x, pos.y + 1),
         room.getPositionAt(pos.x, pos.y - 1),
-    ], p => p !== null && !seen.has(p)) as RoomPosition[];
+    ], p => p !== null) as RoomPosition[];
+}
+
+function nextInSearch(pos: RoomPosition, seen: Set<RoomPosition>): RoomPosition[] {
+    return _.filter(positionsAround(pos), p => !seen.has(p));
 }
 
 export function roomHillClimb(
     startPos: RoomPosition,
     costFunc: (pos: RoomPosition) => number
 ) : [RoomPosition | null, number] {
-    const room = Game.rooms[startPos.roomName];
     let horizon = [startPos];
     let seen = new Set(horizon);
     let minCost = Number.MAX_SAFE_INTEGER;
@@ -75,7 +79,7 @@ export function roomHillClimb(
         }
         minCost = cost;
         minFound = candidate;
-        horizon.push(...nextInSearch(room, candidate, seen));
+        horizon.push(...nextInSearch(candidate, seen));
     }
     return [minFound, minCost];
 }
@@ -84,7 +88,6 @@ export function roomBfsSearch(
     startPos: RoomPosition,
     searchFunc: (pos: RoomPosition) => boolean
 ) {
-    const room = Game.rooms[startPos.roomName];
     let horizon = [startPos];
     let seen = new Set(horizon);
     while (!_.isEmpty(horizon)) {
@@ -93,7 +96,7 @@ export function roomBfsSearch(
         if (searchFunc(candidate)) {
             return candidate;
         }
-        horizon.push(...nextInSearch(room, candidate, seen));
+        horizon.push(...nextInSearch(candidate, seen));
     }
     return null;
 }

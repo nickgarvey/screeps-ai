@@ -1,6 +1,6 @@
 export function garbageCollect() {
     // Clear all times other than the current one
-    const current = Memory.timer[Game.time];
+    const current = _.get(Memory.timer, Game.time, {});
     Memory.timer = {};
     Memory.timer[Game.time] = current;
 }

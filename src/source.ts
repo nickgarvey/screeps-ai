@@ -1,6 +1,13 @@
 import {positionsAround} from "./room-algs";
 export function selectSource(creep: Creep): Source {
-    const sources = creep.room.find(FIND_SOURCES) as Array<Source>;
+    const lairs = creep.room.find(
+        FIND_HOSTILE_STRUCTURES,
+        {filter: (s: Structure) => s.structureType === STRUCTURE_KEEPER_LAIR},
+    );
+    const sources = creep.room.find(
+        FIND_SOURCES, {filter: (s: Source) => s.pos.findInRange(lairs, 10).length === 0},
+    ) as Array<Source>;
+
     return _.max(sources, (source: Source) => {
         return Math.random() * source.energy * creep.pos.getRangeTo(source.pos);
     });

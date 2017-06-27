@@ -28,7 +28,7 @@ function bestCanBuild(
 }
 
 function needDefender(room: Room) {
-    if (_.isEmpty(room.find(FIND_HOSTILE_CREEPS))) {
+    if (room.name === "sim" || _.isEmpty(room.find(FIND_HOSTILE_CREEPS))) {
         return false;
     }
     // just one defender for now

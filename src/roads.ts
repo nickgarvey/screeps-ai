@@ -3,7 +3,7 @@ import {findClusters, centerFinder} from "room-algs";
 const MIN_ROOM_LEVEL_ROADS = 3;
 
 export function roadSites(room: Room): RoomPosition[] {
-    if (room.controller && room.controller.level < MIN_ROOM_LEVEL_ROADS) {
+    if (!room.controller || room.controller.level < MIN_ROOM_LEVEL_ROADS) {
         return [];
     }
 
@@ -32,7 +32,7 @@ export function roadSites(room: Room): RoomPosition[] {
         const center = centerFinder(group);
         for (let j = i + 1; j < clusters.length; j++) {
             // try to avoid swamps but it's okay to build over them
-            const options = {ignoreCreeps: true, swampCost: 2};
+            const options = {ignoreCreeps: true, swampCost: 3};
             const closest = center.findClosestByPath(clusters[j], options);
             paths.push(center.findPathTo(closest, options));
         }

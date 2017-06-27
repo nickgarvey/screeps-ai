@@ -1,13 +1,25 @@
-export function structuresLessThanFull(room: Room) {
-    // TODO memoize
-    const structures = room.find(FIND_STRUCTURES) as Array<Structure>;
-    return _
-        .chain(structures)
-        .filter(structure =>
-                (structure.structureType === STRUCTURE_EXTENSION
-                    || structure.structureType === STRUCTURE_SPAWN)
-                && _.get(structure, 'energy') < _.get(structure, 'energyCapacity'))
-        .value();
+
+interface FillPriorities {
+    [type: string]: number,
+}
+const TO_FILL_PRIORITIES : FillPriorities = {
+    tower: 3,
+    extension: 2,
+    spawn: 1,
+};
+
+export function structuresToFill(room: Room): Structure[] {
+    const structures = room.find(
+        FIND_MY_STRUCTURES,
+        {filter: (s: Structure) => _.get(s, 'energyCapacity')},
+    ) as Structure[];
+    const group = _.groupBy(structures, s => s.structureType);
+    for (const priority in TO_FILL_PRIORITIES) {
+        if (_.get(group, priority)) {
+            return group[priority];
+        }
+    }
+    return [];
 }
 
 export function currentEnergy(room: Room): number {

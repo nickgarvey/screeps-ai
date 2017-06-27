@@ -1,5 +1,5 @@
-import { structuresLessThanFull } from "energy";
-import { selectSource } from "source";
+import {structuresToFill} from "energy";
+import {selectSource} from "source";
 
 const UPGRADE_THRESHOLD = 2000;
 
@@ -21,7 +21,8 @@ function move(creep: Creep, destination: RoomPosition) {
         reusePath: 2,
         visualizePathStyle: {
             stroke: color,
-        }
+        },
+        ignoreCreeps: Math.random() > 0.5,
     });
 }
 
@@ -48,7 +49,7 @@ function collect(creep: Creep) {
 }
 
 function deposit(creep: Creep) {
-    const targets = structuresLessThanFull(creep.room);
+    const targets = structuresToFill(creep.room);
     const target = creep.pos.findClosestByRange(targets);
     if (target) {
         if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
@@ -105,6 +106,36 @@ function defend(creep: Creep) {
     }
 }
 
+function badSign(creep: Creep) {
+    if (!creep.room.controller) {
+        return;
+    }
+    const sign = creep.room.controller.sign;
+    return sign.username !== creep.owner.username || sign.text !== SIGN_TEXT;
+}
+
+const SIGN_TEXT = "http://github.com/nickgarvey/screeps-ai";
+
+function clearSign(creep: Creep) {
+    if (!creep.room.controller) {
+        return;
+    }
+    if (!badSign(creep)) {
+        creep.memory.role = null;
+        return;
+    }
+    switch (creep.signController(creep.room.controller, SIGN_TEXT)) {
+        case OK:
+        case ERR_BUSY:
+        case ERR_INVALID_TARGET:
+            creep.memory.role = null;
+            return;
+        case ERR_NOT_IN_RANGE:
+            move(creep, creep.room.controller.pos);
+            return;
+    }
+}
+
 /** @param {Creep} creep */
 function shouldDefend(creep: Creep) {
     if (creep.getActiveBodyparts(ATTACK) === 0) {
@@ -121,8 +152,10 @@ export function run(creep: Creep) {
             creep.memory.role = "collector";
         } else if (creep.room.controller && creep.room.controller.ticksToDowngrade < UPGRADE_THRESHOLD) {
             creep.memory.role = "upgrader";
-        } else if (structuresLessThanFull(creep.room).length) {
+        } else if (structuresToFill(creep.room).length) {
             creep.memory.role = "depositor";
+        } else if (badSign(creep)) {
+            creep.memory.role = "clearer";
         } else if (!_.isEmpty(Game.constructionSites)) {
             creep.memory.role = "builder";
         } else {
@@ -146,6 +179,9 @@ export function run(creep: Creep) {
             break;
         case "upgrader":
             upgrade(creep);
+            break;
+        case "clearer":
+            clearSign(creep);
             break;
         default:
             console.log("invalid role", creep.memory.role);

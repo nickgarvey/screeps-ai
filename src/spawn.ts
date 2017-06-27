@@ -35,7 +35,7 @@ function needDefender(room: Room) {
     return _.isEmpty(_.find(room.find(FIND_MY_CREEPS), (c: Creep) => c.getActiveBodyparts(ATTACK)));
 }
 
-export const  CREEP_CAP = { 1: 5, 2: 10};
+export const  CREEP_CAP = { 1: 5, 2: 10, 3: 10};
 
 export const CREEP_CAP_DEFAULT = 15;
 

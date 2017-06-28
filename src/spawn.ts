@@ -2,7 +2,7 @@ import {currentEnergy, totalEnergyCapacity} from "energy";
 
 // must be sorted by highest to lowest cost
 const UNIT_OPTIONS = [
-//    [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
+    [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE],
     [WORK, WORK, CARRY, MOVE, MOVE],
     [WORK, CARRY, MOVE],
 ];
@@ -22,7 +22,7 @@ function configCost(unitConfig: Array<BodyPartConstant>) {
 
 function bestCanBuild(
     units: Array<Array<BodyPartConstant>>,
-    energy: number
+    energy: number,
 ): Array<BodyPartConstant> {
     return  _.find(units, c => configCost(c) <= energy);
 }

@@ -65,6 +65,35 @@ function deposit(creep: Creep) {
     }
 }
 
+function needRepairs(creep: Creep) : boolean {
+    return !!creep.room.find(FIND_STRUCTURES, {filter:  (s: Structure) => {
+        if (s.structureType === STRUCTURE_TOWER) {
+            return s.hits < s.hitsMax;
+        } else {
+            // TODO repair logic for roads ? or just let them rebuild?
+            return false;
+        }
+    }}).length;
+}
+
+function repair(creep: Creep) {
+    const structures = creep.room.find(FIND_STRUCTURES, {filter:  (s: Structure) => s.hits < s.hitsMax}) as Structure[];
+    const towers = _.filter(structures, s => s.structureType === STRUCTURE_TOWER) as Tower[];
+    const needingRepairs = towers.length ? towers : structures;
+    if (needingRepairs.length) {
+        const toRepair = creep.pos.findClosestByPath(needingRepairs);
+        if (creep.repair(toRepair) === ERR_NOT_IN_RANGE) {
+            move(creep, toRepair.pos);
+            return;
+        }
+    } else {
+        creep.memory.role = null;
+    }
+    if (creep.carry.energy === 0) {
+        creep.memory.role = null;
+    }
+}
+
 function upgrade(creep: Creep) {
     const controller = creep.room.controller;
     if (!controller) {
@@ -145,6 +174,7 @@ function shouldDefend(creep: Creep) {
 }
 
 export function run(creep: Creep) {
+    // TODO role type
     if (!creep.memory.role) {
         if (shouldDefend(creep)) {
             creep.memory.role = "defender";
@@ -152,6 +182,8 @@ export function run(creep: Creep) {
             creep.memory.role = "collector";
         } else if (creep.room.controller && creep.room.controller.ticksToDowngrade < UPGRADE_THRESHOLD) {
             creep.memory.role = "upgrader";
+        } else if (needRepairs(creep)) {
+            creep.memory.role = "repairer";
         } else if (structuresToFill(creep.room).length) {
             creep.memory.role = "depositor";
         } else if (badSign(creep)) {
@@ -182,6 +214,9 @@ export function run(creep: Creep) {
             break;
         case "clearer":
             clearSign(creep);
+            break;
+        case "repairer":
+            repair(creep);
             break;
         default:
             console.log("invalid role", creep.memory.role);

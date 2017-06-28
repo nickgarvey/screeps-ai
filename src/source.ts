@@ -12,7 +12,7 @@ export function selectSource(creep: Creep): Source {
         if (source.pos.isNearTo(creep.pos)) {
             return Number.POSITIVE_INFINITY;
         }
-        return source.energy / creep.pos.getRangeTo(source.pos);
+        return (sourceOccupied(source) ? Math.random() / 2 : 1) * (0.3 * source.energy) / creep.pos.getRangeTo(source.pos);
     });
 }
 

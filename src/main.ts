@@ -22,10 +22,10 @@ function buildConstructionSites() {
         console.log('structure building');
         _.forEach(Game.rooms, buildIfNeeded);
     }
-    if (Game.time % 10 === 5) {
+    if (Game.time % 7 === 1) {
         console.log('road building');
         for (const room of _.values(Game.rooms) as Room[]) {
-            const positions = Roads_.roadSites(room);
+            const positions = Roads_.newRoadSites(room);
             positions.forEach(p => p.createConstructionSite(STRUCTURE_ROAD));
         }
     }

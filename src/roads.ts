@@ -2,7 +2,7 @@ import {findClusters, centerFinder} from "room-algs";
 
 const MIN_ROOM_LEVEL_ROADS = 3;
 
-export function roadSites(room: Room): RoomPosition[] {
+export function newRoadSites(room: Room): RoomPosition[] {
     if (!room.controller || room.controller.level < MIN_ROOM_LEVEL_ROADS) {
         return [];
     }
@@ -16,12 +16,18 @@ export function roadSites(room: Room): RoomPosition[] {
         return [];
     }
 
-    const structures = room.find(FIND_MY_STRUCTURES) as RoomObject[];
-    const sources = room.find(FIND_SOURCES)as RoomObject[];
-    const importantPositions = _.map(sources.concat(structures), o => o.pos);
+    const structures = room.find(FIND_STRUCTURES) as Structure[];
+    const sources = room.find(FIND_SOURCES) as Source[];
+    let toPathPositions : RoomPosition[] = [];
+    for (const obj of structures) {
+        if (obj.structureType !== STRUCTURE_ROAD) {
+            toPathPositions.push(obj.pos);
+        }
+    }
+    toPathPositions.push.apply(sources.map(s => s.pos));
 
     // list of positions grouped together
-    const clusters = findClusters(importantPositions);
+    const clusters = findClusters(toPathPositions);
     if (_.isEmpty(clusters)) {
         return [];
     }
@@ -38,10 +44,17 @@ export function roadSites(room: Room): RoomPosition[] {
         }
     }
 
+    let existingRoads = new Set();
+    for (const structure of structures) {
+        if (structure.structureType === STRUCTURE_ROAD) {
+            existingRoads.add(structure.pos.x + ":" + structure.pos.y);
+        }
+    }
+
     let result = [];
     for (const pathSquare of _.flatten(paths)) {
         const pos = room.getPositionAt(pathSquare.x, pathSquare.y);
-        if (pos !== null && !_.any(importantPositions, pos.isEqualTo)) {
+        if (pos !== null && !existingRoads.has(pos) && !_.any(toPathPositions, pos.isEqualTo)) {
             result.push(pos);
         }
     }

@@ -9,7 +9,10 @@ export function selectSource(creep: Creep): Source {
     ) as Array<Source>;
 
     return _.max(sources, (source: Source) => {
-        return Math.random() * source.energy * creep.pos.getRangeTo(source.pos);
+        if (source.pos.isNearTo(creep.pos)) {
+            return Number.POSITIVE_INFINITY;
+        }
+        return source.energy / creep.pos.getRangeTo(source.pos);
     });
 }
 

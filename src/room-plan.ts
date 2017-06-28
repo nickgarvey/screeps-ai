@@ -171,7 +171,7 @@ function validState(
 
 function buildPathFindingCostFunction(room: Room) {
     const sources = room.find(FIND_SOURCES) as Source[];
-    const structures = room.find(FIND_MY_STRUCTURES) as Structure[];
+    const structures = room.find(FIND_STRUCTURES) as Structure[];
     const spawns = _.filter(
         structures,
         s => s.structureType === STRUCTURE_SPAWN

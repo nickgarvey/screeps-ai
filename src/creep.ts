@@ -22,7 +22,7 @@ function move(creep: Creep, destination: RoomPosition) {
         visualizePathStyle: {
             stroke: color,
         },
-        ignoreCreeps: Math.random() > 0.5,
+        ignoreCreeps: false,
     });
 }
 

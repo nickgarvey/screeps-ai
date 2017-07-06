@@ -1,7 +1,7 @@
 interface CreepMemory {
     role: string | null | undefined;
     selection: string | null | undefined;
-    posHistory: RoomPosition[] | null | undefined;
+    stuckPosHistory: RoomPosition[] | null | undefined;
 }
 
 interface RoomState {

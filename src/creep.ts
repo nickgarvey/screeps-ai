@@ -25,16 +25,18 @@ function move(creep: Creep, destination: RoomPosition) {
     // TODO pull into own file and avoid problem where it moves one step in
     // TODO the ignoreCreeps direction but then is instantly blocked again
     let ignoreCreeps = true;
-    const posHistory = _.get(creep.memory, 'posHistory', []) as RoomPosition[];
-    posHistory.push(creep.pos);
-    if (posHistory.length > MOVE_STUCK_TICKS) {
-        if (_.every(posHistory, p => creep.pos.isEqualTo(p.x, p.y))) {
+    const stuckPosHistory = _.get(creep.memory, 'stuckPosHistory', []) as RoomPosition[];
+    if (creep.fatigue === 0) {
+        stuckPosHistory.push(creep.pos);
+    }
+    if (stuckPosHistory.length > MOVE_STUCK_TICKS) {
+        if (_.every(stuckPosHistory, p => creep.pos.isEqualTo(p.x, p.y))) {
             ignoreCreeps = false;
             console.log(creep.name, 'is stuck, repathing around creeps');
         }
-        posHistory.shift();
+        stuckPosHistory.shift();
     }
-    creep.memory.posHistory = posHistory;
+    creep.memory.stuckPosHistory = stuckPosHistory;
 
     return creep.moveTo(destination, {
         reusePath: PATH_REUSE,

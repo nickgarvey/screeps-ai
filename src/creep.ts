@@ -17,12 +17,13 @@ const ROLE_TO_COLORS: RoleToColor = {
 
 function move(creep: Creep, destination: RoomPosition) {
     const color = creep.memory.role ? ROLE_TO_COLORS[creep.memory.role] : "#000000";
+    const creepsNear = _.any(Game.creeps, c => c.pos.isNearTo(creep.pos));
     return creep.moveTo(destination, {
-        reusePath: 2,
+        reusePath: 1,
         visualizePathStyle: {
             stroke: color,
         },
-        ignoreCreeps: false,
+        ignoreCreeps: !creepsNear,
     });
 }
 

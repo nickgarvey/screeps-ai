@@ -3,10 +3,14 @@ import {selectSource, sourceOccupied} from "source";
 
 const UPGRADE_THRESHOLD = 2000;
 
+const MOVE_STUCK_TICKS = 1;
+const PATH_REUSE = 1;
+
 interface RoleToColor {
     [index:string]: string,
 }
 
+// TODO roles as enums
 const ROLE_TO_COLORS: RoleToColor = {
     builder: "#FFFF00",
     depositor: "#009900",
@@ -17,13 +21,27 @@ const ROLE_TO_COLORS: RoleToColor = {
 
 function move(creep: Creep, destination: RoomPosition) {
     const color = creep.memory.role ? ROLE_TO_COLORS[creep.memory.role] : "#000000";
-    const creepsNear = _.any(Game.creeps, c => c.pos.isNearTo(creep.pos));
+
+    // TODO pull into own file and avoid problem where it moves one step in
+    // TODO the ignoreCreeps direction but then is instantly blocked again
+    let ignoreCreeps = true;
+    const posHistory = _.get(creep.memory, 'posHistory', []) as RoomPosition[];
+    posHistory.push(creep.pos);
+    if (posHistory.length > MOVE_STUCK_TICKS) {
+        if (_.every(posHistory, p => creep.pos.isEqualTo(p.x, p.y))) {
+            ignoreCreeps = false;
+            console.log(creep.name, 'is stuck, repathing around creeps');
+        }
+        posHistory.shift();
+    }
+    creep.memory.posHistory = posHistory;
+
     return creep.moveTo(destination, {
-        reusePath: 1,
+        reusePath: PATH_REUSE,
         visualizePathStyle: {
             stroke: color,
         },
-        ignoreCreeps: !creepsNear,
+        ignoreCreeps: ignoreCreeps,
     });
 }
 

@@ -16,15 +16,20 @@ export function newRoadSites(room: Room): RoomPosition[] {
         return [];
     }
 
-    const structures = room.find(FIND_STRUCTURES) as Structure[];
     const sources = room.find(FIND_SOURCES) as Source[];
     let toPathPositions : RoomPosition[] = [];
+
+    for (const source of sources) {
+        toPathPositions.push(source.pos);
+    }
+
+    const structures = room.find(FIND_MY_STRUCTURES) as Structure[];
     for (const obj of structures) {
         if (obj.structureType !== STRUCTURE_ROAD) {
             toPathPositions.push(obj.pos);
         }
     }
-    toPathPositions.push.apply(sources.map(s => s.pos));
+
 
     // list of positions grouped together
     const clusters = findClusters(toPathPositions);
@@ -32,32 +37,30 @@ export function newRoadSites(room: Room): RoomPosition[] {
         return [];
     }
 
-    let paths = [];
+    let paths : RoomPosition[] = [];
     for (let i = 0; i < clusters.length; i++) {
         const group = clusters[i];
         const center = centerFinder(group);
         for (let j = i + 1; j < clusters.length; j++) {
             // try to avoid swamps but it's okay to build over them
-            const options = {ignoreCreeps: true, swampCost: 3};
-            const closest = center.findClosestByPath(clusters[j], options);
-            paths.push(center.findPathTo(closest, options));
+            const options = {swampCost: 3, maxRooms: 1, heuristicWeight: 1};
+            // TODO avoid trying to build roads through structures
+            const path = PathFinder.search(center, clusters[j].map(p => ({pos: p, range: 1})), options);
+            if (path.incomplete) {
+                continue;
+            }
+            for (const square of path.path) {
+                paths.push(square);
+            }
         }
     }
 
-    let existingRoads = new Set();
-    for (const structure of structures) {
-        if (structure.structureType === STRUCTURE_ROAD) {
-            existingRoads.add(structure.pos.x + ":" + structure.pos.y);
-        }
-    }
-
-    let result = [];
-    for (const pathSquare of _.flatten(paths)) {
-        const pos = room.getPositionAt(pathSquare.x, pathSquare.y);
-        if (pos !== null && !existingRoads.has(pos) && !_.any(toPathPositions, pos.isEqualTo)) {
+    let result : RoomPosition[] = [];
+    for (const pos of _.uniq(paths, p => p.x + ":" + p.y)) {
+        // not going to bother deduplicating, doesn't do any harm
+        if (!_.any(toPathPositions, p => p.isEqualTo(pos))) {
             result.push(pos);
         }
     }
-
     return result;
 }

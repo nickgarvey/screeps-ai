@@ -3,7 +3,7 @@ import {currentEnergy, totalEnergyCapacity} from "energy";
 // must be sorted by highest to lowest cost
 const UNIT_OPTIONS = [
     [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
-    [WORK, WORK, CARRY, MOVE, MOVE],
+    [WORK, CARRY, MOVE, MOVE],
     [WORK, CARRY, MOVE],
 ];
 
@@ -35,7 +35,7 @@ function needDefender(room: Room) {
     return _.isEmpty(_.find(room.find(FIND_MY_CREEPS), (c: Creep) => c.getActiveBodyparts(ATTACK)));
 }
 
-export const CREEP_CAP = { 1: 5 };
+export const CREEP_CAP = { 1: 5, 2: 7 };
 
 export const CREEP_CAP_DEFAULT = 10;
 
